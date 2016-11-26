@@ -5,12 +5,12 @@
 calculating its current value based on Effects Boolean.
 */
 
-import AttrBoolType;
-enum AttrBoolType { STUN };
+import AttrBooleanType;
+enum AttrBooleanType { STUN };
 
 class AttrBoolean
 {
-	var type: AttrBoolType;
+	var type: AttrBooleanType;
 	var baseValue: boolean;
 	var currentValue: boolean;
 
@@ -24,9 +24,26 @@ class AttrBoolean
 		currentValue = baseValue;
 	}
 
+
+	function IsBaseValue()
+	{
+		return currentValue == baseValue;
+	}
+
 	function Recalculate(effects: List.<EffectBoolean>)
 	{
-		
+		currentValue = baseValue;
+		for (e in effects)
+		{
+			if (e.value == false)
+			{
+				currentValue = false;
+				break;
+			}
+			else
+				currentValue = e.value;
+		}
+		Debugger.instance.Log(type.ToString() + ", " + currentValue);
 	}
 
 }

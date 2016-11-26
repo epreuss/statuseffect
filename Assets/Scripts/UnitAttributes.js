@@ -1,5 +1,6 @@
 ﻿#pragma strict
 
+@script RequireComponent(Unit)
 @script RequireComponent(StatusEffectsManager)
 
 /*
@@ -26,10 +27,16 @@ private var unit: Unit;
 
 function Start()
 {
+	unit = GetComponent(Unit);
 	for (n in numbers)
 	{
 		n.Reset();
-		UpdatePrimitive(n);
+		UpdatePrimitiveNumber(n);
+	}
+	for (b in booleans)
+	{
+		b.Reset();
+		UpdatePrimitiveBoolean(b);
 	}
 }
 
@@ -41,6 +48,15 @@ private function GetAttrNumber(targetType: AttrNumberType): AttrNumber
 	return null;
 }
 
+private function GetAttrBoolean(targetType: AttrBooleanType): AttrBoolean
+{
+	for (b in booleans)
+		if (b.type == targetType)
+			return b;
+	return null;
+}
+
+
 function RecalculateAttrNumber(type: AttrNumberType, effectsNumber: List.<EffectNumber>)
 {
 	var attr = GetAttrNumber(type);
@@ -48,15 +64,38 @@ function RecalculateAttrNumber(type: AttrNumberType, effectsNumber: List.<Effect
 	if (!hasTheTargetAttr)
 		return;
 	
+	var reapplyChangesNothing = attr.IsBaseValue() && effectsNumber.Count == 0;
+	if (reapplyChangesNothing)
+	 	return;
+
 	if (effectsNumber.Count > 0)
 		attr.Recalculate(effectsNumber);
 	else
 		attr.Reset();
 	
-	UpdatePrimitive(attr);
+	UpdatePrimitiveNumber(attr);
 }
 
-function ModifyPrimitivePermanently(effect: EffectNumber)
+function RecalculateAttrBoolean(type: AttrBooleanType, effectsBoolean: List.<EffectBoolean>)
+{
+	var attr = GetAttrBoolean(type);
+	var hasTheTargetAttr = attr != null;
+	if (!hasTheTargetAttr)
+		return;
+
+	var reapplyChangesNothing = attr.IsBaseValue() && effectsBoolean.Count == 0;
+	if (reapplyChangesNothing)
+	 	return;
+	
+	if (effectsBoolean.Count > 0)
+		attr.Recalculate(effectsBoolean);
+	else
+		attr.Reset();
+	
+	UpdatePrimitiveBoolean(attr);
+}
+
+function ModifyNumberPermanently(effect: EffectNumber)
 {
 	var attr = GetAttrNumber(effect.targetAttr);
 	if (attr == null)
@@ -65,23 +104,26 @@ function ModifyPrimitivePermanently(effect: EffectNumber)
 	attr.ModifyPermanently(effect);
 }
 
-function UpdatePrimitive(attr: AttrNumber)
+private function UpdatePrimitiveNumber(attr: AttrNumber)
 {
 	switch (attr.type)
 	{
 		case HEALTH:
 			health = attr.GetCurrentValue();
+			break;
 		case MOVESPEED:
 			moveSpeed = attr.GetCurrentValue();
+			break;
 	}
 }
 
-function UpdatePrimitive(attr: AttrBoolean)
+private function UpdatePrimitiveBoolean(attr: AttrBoolean)
 {
 	switch (attr.type)
 	{
-		case STUN:		
+		case STUN:	
 			stun = attr.GetCurrentValue();		
 			unit.OnStun(stun);		
+			break;		
 	}
 }

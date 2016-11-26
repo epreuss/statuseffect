@@ -15,6 +15,8 @@ class AttrNumber
 	var roofLimit: Number;
 	var floorLimit: Number;
 	var currentValue: Number;	
+
+	private var reseted: boolean;
 		
 	function GetCurrentValue()
 	{
@@ -23,11 +25,18 @@ class AttrNumber
 
 	function Reset()
 	{
+		reseted = true;
 		currentValue = baseValue;
+	}
+
+	function IsBaseValue()
+	{
+		return reseted;
 	}
 	
 	function ModifyPermanently(effect: EffectNumber)
 	{
+		reseted = false;
 		if (effect.type == SUM)
 			baseValue += effect.value;
 		if (effect.type == MULTIPLY)
@@ -41,6 +50,7 @@ class AttrNumber
 
 	function Recalculate(effects: List.<EffectNumber>)
 	{
+		reseted = false;
 		var sumEffects = new List.<EffectNumber>();
 		var multiplyEffects = new List.<EffectNumber>();
 		for (var i = 0; i < effects.Count; i++)
@@ -51,19 +61,19 @@ class AttrNumber
 				multiplyEffects.Add(effects[i]);
 		}
 		
-		currentValue = baseValue;		
-		for (effect in sumEffects)	
-		{
-			currentValue += effect.value;
-			if (effect.permanent)
-				baseValue += effect.value;
-		}				
+		currentValue = baseValue;	
 		for (effect in multiplyEffects)			
 		{
 			currentValue *= effect.value;
 			if (effect.permanent)
 				baseValue *= effect.value;
-		}
+		}	
+		for (effect in sumEffects)	
+		{
+			currentValue += effect.value;
+			if (effect.permanent)
+				baseValue += effect.value;
+		}						
 
 		if (currentValue > roofLimit)
 			currentValue = roofLimit;

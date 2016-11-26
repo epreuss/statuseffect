@@ -8,6 +8,6 @@
 
 class EffectBoolean extends Effect
 {
-	var targetAttr: AttrBoolType;
+	var targetAttr: AttrBooleanType;
 	var value: boolean;	
 }
