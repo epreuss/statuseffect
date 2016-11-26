@@ -1,3 +1,10 @@
 /Temp/
+/Library/
 
 *.sln
+*.csproj
+*.unityproj
+*.sln
+*.user
+*.userprefs
+*.DS_store

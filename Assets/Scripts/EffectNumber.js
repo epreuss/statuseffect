@@ -16,22 +16,24 @@ class EffectNumber extends Effect
 	var type: EffectNumberType;
 	var targetAttr: AttrNumberType;
 	var value: Number;
-	
-	private var baseValue: Number;
-	
-	// Used by StatusEffect and StatusEffectsManager.
 	var permanent: boolean;
+	
+	private var baseValue: Number;	
 	
 	function Start()
 	{
 		baseValue = value;
 	}
 	
+	/*
+	This is used by TICK type non-permanent Effect Numbers,
+	so they can stack their value to increase tick value.
+	Eg.: Slow over time. Starts at 0.8, goes to 0.64 
+	in the next tick, then 0.512...
+	*/
 	function StackValue()
 	{
-		if (type == SUM)
-			value += baseValue;
-		else
+		if (type == MULTIPLY)		
 			value *= baseValue;
 	}
 	

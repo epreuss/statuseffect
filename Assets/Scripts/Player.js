@@ -17,6 +17,9 @@ function Start()
 
 function Update() 
 {
+	if (attr.stun)
+		return;
+	
 	if (controls.right)
 		transform.position.x += attr.moveSpeed * Time.deltaTime;
 	if (controls.left)

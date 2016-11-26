@@ -1,8 +1,9 @@
 ﻿#pragma strict
 
 /*
-This class defines WHEN an Effect will be applied (by the StatusEffectsManager).
-Eg.: When starts, leaves or ticks over time.
+This class controls over-time variables for TICK Effects
+and main features envolving stacking effects and 
+management for Effects it holds.
 */
 
 class StatusEffect extends Effect
@@ -87,7 +88,7 @@ class StatusEffect extends Effect
 		{
 			ApplyPermanentEffects(TICK);	
 			manager.ReapplyEffectsNumber(TICK);
-			StackTickEffects();			
+			StackMultiplyTickEffects();			
 		}
 	}
 
@@ -151,13 +152,13 @@ class StatusEffect extends Effect
 		return false;
 	}
 	
-	private function StackTickEffects()
+	private function StackMultiplyTickEffects()
 	{
 		for (e in effects)
 			if (e.mode == TICK)				
 			{
 				var EN = e as EffectNumber;
-				if (EN)
+				if (EN && EN.type == MULTIPLY)
 					EN.StackValue();
 			}
 				

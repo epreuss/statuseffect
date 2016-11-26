@@ -22,6 +22,8 @@ var health: Number;
 var moveSpeed: Number;
 var stun: boolean;
 
+private var unit: Unit;
+
 function Start()
 {
 	for (n in numbers)
@@ -71,5 +73,15 @@ function UpdatePrimitive(attr: AttrNumber)
 			health = attr.GetCurrentValue();
 		case MOVESPEED:
 			moveSpeed = attr.GetCurrentValue();
+	}
+}
+
+function UpdatePrimitive(attr: AttrBoolean)
+{
+	switch (attr.type)
+	{
+		case STUN:		
+			stun = attr.GetCurrentValue();		
+			unit.OnStun(stun);		
 	}
 }
