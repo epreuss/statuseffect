@@ -7,7 +7,7 @@ var showDebug: boolean;
 
 var logs: String; 
 
-function Start()
+function Awake()
 {
 	instance = this;	
 }

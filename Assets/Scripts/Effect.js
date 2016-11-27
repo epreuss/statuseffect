@@ -14,12 +14,12 @@ var mode: ApplyMode;
 
 private var id: int;
 
-function setID(id: int)
+function SetID(id: int)
 {
 	this.id = id;
 }
 
-function getID()
+function GetID()
 {
 	return id;
 }

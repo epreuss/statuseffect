@@ -46,7 +46,15 @@ class StatusEffectEditor extends Editor
     	ShowBoldLabel("HUD");
         script.showHUD = EditorGUILayout.Toggle("Show On HUD", script.showHUD);	
         if (script.showHUD)
+		{
         	script.icon = EditorGUILayout.ObjectField("Sprite Icon", script.icon, typeof(Sprite)) as Sprite;
+			script.color = EditorGUILayout.ColorField("Color", script.color);
+		}
+		else
+		{
+			script.icon = null;
+			script.color = Color.white;
+		}
     }
 
     private function ShowEffectsList()
@@ -66,20 +74,29 @@ class StatusEffectEditor extends Editor
     {
     	ShowBoldLabel("Duration Options");
     	script.durationType = EditorGUILayout.EnumPopup("Duration Type", script.durationType);
-    	if (script.durationType == StatusEffectDurationType.INSTANT)
+    	if (script.IsInstant())
     	{
   			script.duration = 0;
   			script.useTicks = false;
   			script.totalTicks = 3;
   		}
+		else if (script.IsPermanent())
+		{
+			script.duration = 0;
+			script.useTicks = EditorGUILayout.Toggle("Use Tick", script.useTicks);
+			if (script.useTicks)
+				script.delayInSecs = EditorGUILayout.Slider("Delay In Secs", script.delayInSecs, 0.1, 5);     
+			else
+				script.delayInSecs = 0.1;
+		}
   		else
   		{
   			script.duration = EditorGUILayout.FloatField("Duration", script.duration);
-	    	script.useTicks = EditorGUILayout.Toggle("Use Tick", script.useTicks);
-	    	if (script.useTicks)	    	
-	    		script.totalTicks = EditorGUILayout.Slider("Total Ticks", script.totalTicks, 3, 10);     	
-	    	else
-	    		script.totalTicks = 3;
+			script.useTicks = EditorGUILayout.Toggle("Use Tick", script.useTicks);
+			if (script.useTicks)	    	
+				script.totalTicks = EditorGUILayout.Slider("Total Ticks", script.totalTicks, 3, 10);     	
+			else
+				script.totalTicks = 3;
     	}
     }
 

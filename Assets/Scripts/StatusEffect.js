@@ -11,7 +11,7 @@ This class can have a class of the same type in its list of Effects,
 because the SE class has Effect as parent.
 */
 
-enum StatusEffectDurationType { INSTANT, TIME };
+enum StatusEffectDurationType { INSTANT, OVERTIME, PERMANENT };
 
 class StatusEffect extends Effect
 {
@@ -19,6 +19,7 @@ class StatusEffect extends Effect
 
 	var durationType: StatusEffectDurationType;
 	var icon: Sprite;
+	var color: Color;
 	
 	// States.
 	/*
@@ -36,7 +37,7 @@ class StatusEffect extends Effect
 	// Tick.
 	var useTicks: boolean;
 	@Range(3, 10) var totalTicks: int;
-	private var delayInSecs: float;
+	@Range(0.1, 5) var delayInSecs: float;
 	private var timerTick: float;
 	private var ticksDone: int;
 	
@@ -60,8 +61,9 @@ class StatusEffect extends Effect
 	
 	function Start()
 	{
+		Debugger.instance.Log(gameObject, "" + GetID());
 		canDestroy = !isChild;
-		if (useTicks)
+		if (useTicks && !IsPermanent())
 			calculateTickDelay();		
 
 		InitializeQuickAccessVariables();
@@ -97,14 +99,17 @@ class StatusEffect extends Effect
 
 	function OnFrame() 
 	{		
-		timerDuration += Time.deltaTime;
-		if (timerDuration > duration)
+		if (IsOverTime())
 		{
-			Expire();
-			timerDuration = 0;
+			timerDuration += Time.deltaTime;
+			if (timerDuration > duration)
+			{
+				Expire();
+				timerDuration = 0;
+			}
 		}
 		if (useTicks)
-			if (ticksDone < totalTicks)
+			if (ticksDone < totalTicks || IsPermanent())
 			{
 				timerTick += Time.deltaTime;
 				if (timerTick > delayInSecs)
@@ -297,9 +302,24 @@ class StatusEffect extends Effect
 		}
 	}
 
-	private function IsInstant()
+	function IsInstant()
 	{
 		return durationType == StatusEffectDurationType.INSTANT;
+	}
+	
+	function IsPermanent()
+	{
+		return durationType == StatusEffectDurationType.PERMANENT;
+	}
+	
+	function IsOverTime()
+	{
+		return durationType == StatusEffectDurationType.OVERTIME;
+	}
+
+	function IsEqual(otherSE: StatusEffect)
+	{
+		return GetID() == otherSE.GetID() && GetInstanceID() == otherSE.GetInstanceID();
 	}
 
 	/*

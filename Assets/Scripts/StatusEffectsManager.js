@@ -23,6 +23,10 @@ var statusEffects: List.<StatusEffect>;
 private var unitAttr: UnitAttributes;
 
 private var lock: boolean;
+private var instanceID: int;
+
+private var onListAdd: Function;
+private var onListRemove: Function;
 
 function Awake()
 {
@@ -41,13 +45,19 @@ function Update()
 	}
 }
 
+function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Function)
+{
+	this.onListAdd = onListAdd;
+	this.onListRemove = onListRemove;
+}
+
 /*
 Other units call this method to send
 Status Effects to the unit associated to this manager.
 */
 function OnStatusEffectReceive(newSE: StatusEffect) 
 {
-	var SE = HasStatusEffectByID(newSE.getID());
+	var SE = HasStatusEffectByID(newSE.GetID());
 	if (SE != null) // Already has the SE.
 	{
 		if (SE.stackable)
@@ -76,11 +86,12 @@ function RemoveStatusEffect(deadSE: StatusEffect): IEnumerator
 	{
 		lock = true;		
 		for (var i = 0; i < statusEffects.Count; i++)
-			if (statusEffects[i].getID() == deadSE.getID())
+			if (statusEffects[i].GetID() == deadSE.GetID())
 			{
 				Debugger.instance.Log(gameObject, "Removed " + deadSE);
+				onListRemove(deadSE);
 				statusEffects[i].OnRemoveFromManager();			
-				statusEffects.RemoveAt(i);	
+				statusEffects.RemoveAt(i);					
 				break;
 			}		
 		lock = false;
@@ -106,13 +117,14 @@ private function AddStatusEffect(newSE: StatusEffect): IEnumerator
 		lock = true;
 		Debugger.instance.Log(gameObject, "Added " + newSE);
 		statusEffects.Add(newSE);
+		onListAdd(newSE);
 		lock = false;
 
 		// This order is important!
 		Debugger.instance.Log(gameObject, "Reapply - Entry SE");			
-		ReapplyTemporaryEffects();			
+		ReapplyTemporaryEffects();
 		newSE.SetManager(this);	
-		newSE.OnEntry();		
+		newSE.OnEntry();				
 	}
 }
 
@@ -191,7 +203,7 @@ private function ReapplyTemporaryEffectsBoolean()
 private function HasStatusEffectByID(id: int)
 {
 	for (SE in statusEffects)
-		if (SE.getID() == id)
+		if (SE.GetID() == id)
 			return SE;
 	return null;
 }
