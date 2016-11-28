@@ -44,10 +44,10 @@ function Update()
 			SE.OnFrame();					
 		lock = false;
 	}
-	if (Input.GetKeyDown(KeyCode.P))
-	{
+	if (Input.GetKeyDown(KeyCode.P))	
 		statusEffects[0].Purge();
-	}
+	if (Input.GetKeyDown(KeyCode.R))	
+		ReapplyTemporaryEffects();
 }
 
 function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Function, onSEStack: Function)
@@ -94,29 +94,17 @@ function RemoveStatusEffect(deadSE: StatusEffect): IEnumerator
 	else	
 	{
 		lock = true;		
-		var reapplyEN = false;
-		var reapplyEB = false;
 		for (var i = 0; i < statusEffects.Count; i++)
 			if (statusEffects[i].GetID() == deadSE.GetID())
 			{
 				Debugger.instance.Log(gameObject, "Removed " + deadSE);
-				onListRemove(deadSE);
-				reapplyEN = statusEffects[i].hasValidTemporaryENs;					
-				reapplyEB = statusEffects[i].hasValidEBs;					
+				onListRemove(deadSE);				
 				statusEffects[i].OnRemoveFromManager();			
 				statusEffects.RemoveAt(i);					
 				break;
 			}		
 		lock = false;
-		/*
-		If an SE reapplied effects, it means that it modified 
-		variables temporarily. There are SEs that don't even reapply
-		because they are bad designed in the inspector.
-		*/
-		if (reapplyEN)
-			ReapplyTemporaryEffectsNumber();
-		if (reapplyEB)
-			ReapplyTemporaryEffectsBoolean();
+		ReapplyTemporaryEffects();
 	}
 }
 
@@ -167,6 +155,7 @@ That's why this method only works with temporary effects.
 */
 function ReapplyTemporaryEffects()
 {	
+	//Debugger.instance.Log(gameObject, "Reapply");
 	ReapplyTemporaryEffectsNumber();
 	ReapplyTemporaryEffectsBoolean();
 }
@@ -176,13 +165,15 @@ Important:
 - This method DOES NOT reapply permanent effects!
 - It DOES NOT reapply LEAVE effects!
 */
-function ReapplyTemporaryEffectsNumber()
-{
-	Debugger.instance.Log(gameObject, "Reapply Numbers");
-	var allEN = new List.<EffectNumber>();
+
+var allEN: List.<EffectNumber>;
+
+private function ReapplyTemporaryEffectsNumber()
+{	
+	allEN = new List.<EffectNumber>();
 	for (SE in statusEffects)
 	{
-		var effectsNumber = SE.GetEffectsNumber();	
+		var effectsNumber = SE.GetValidEffectsNumberForReapply();	
 		for (e in effectsNumber)
 			allEN.Add(e);
 	}
@@ -190,16 +181,15 @@ function ReapplyTemporaryEffectsNumber()
 	for (var type = 0; type < System.Enum.GetValues(typeof(AttrNumberType)).Length; type++)
 	{
 		for (EN in allEN)		
-			if (EN.targetAttr == type && !EN.permanent && EN.mode != LEAVE && EN.valid)						
-				effectsForEachAttr.Add(EN);					
+			if (EN.targetAttr == type)						
+				effectsForEachAttr.Add(EN);							
 		unitAttr.RecalculateAttrNumber(type, effectsForEachAttr);
 		effectsForEachAttr.Clear();
 	}
 }
 
-function ReapplyTemporaryEffectsBoolean()
+private function ReapplyTemporaryEffectsBoolean()
 {
-	Debugger.instance.Log(gameObject, "Reapply Booleans");
 	var allEB = new List.<EffectBoolean>();
 	for (SE in statusEffects)
 	{

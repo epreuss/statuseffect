@@ -51,91 +51,27 @@ class StatusEffect extends Effect
 
 	// Quick acess variables.
 	private var permanentENs: List.<EffectNumber>;
-	private var temporaryENs: List.<EffectNumber>;
-	
-	// Booleans.
 	var hasPermanentENs: boolean;	
-	var hasValidTemporaryENs: boolean;		
-	var hasValidEBs: boolean;
-	var hasValidSEs: boolean;
-		
+	var hasSEChildren: boolean;
 
 	// Associated manager.
 	private var manager: StatusEffectsManager;	
 	
 	function Awake()
 	{
-		/*
-		var SEs = GetStatusEffects();
-		for (e in SEs)		
-			e.Initialize();
-		*/
-		
 		currentStacks = 1;
 		canDestroy = !isChild;
 		if (useTicks && !IsPermanent())
 			CalculateTickDelay();		
-
-		ValidateEffectsNumber();
-		ValidateEffectsBoolean();
-		ValidateStatusEffects();					
-		InitializeLists();
-		InitializeBooleans();		
+					
+		InitializeListsAndBooleans();		
 	}
 
-	private function InitializeLists()
+	private function InitializeListsAndBooleans()
 	{
-		permanentENs = GetPermanentEffectsNumber();
-		temporaryENs = GetTemporaryEffectsNumber();		
-	}
-	
-	private function InitializeBooleans()
-	{
-		hasPermanentENs = permanentENs.Count > 0;
-		hasValidTemporaryENs = temporaryENs.Count > 0 && GetValidCountTemporaryEffectsNumber() > 0;				
-		hasValidEBs = GetValidCountEffectsBoolean() > 0;	
-		hasValidSEs = GetValidCountStatusEffects() > 0;	
-	}
-	
-	private function ValidateEffectsNumber()
-	{
-		var ENs = GetEffectsNumber();
-		for (e in ENs)		
-		{
-			e.Validate(true);
-			if (e.mode == TICK && !useTicks)							
-				e.Validate(false);															
-			if (IsInstant() && !e.permanent)
-				e.Validate(false);	
-			if (IsPermanent() && e.mode == LEAVE)
-				e.Validate(false);	
-		}
-	}
-	
-	private function ValidateEffectsBoolean()
-	{
-		var EBs = GetEffectsBoolean();
-		for (e in EBs)		
-		{
-			e.Validate(true);
-			if (IsInstant())		
-				e.Validate(false);
-			if (e.mode == TICK)		
-				e.Validate(false);
-			if (e.mode == LEAVE)		
-				e.Validate(false);
-		}
-	}
-	
-	private function ValidateStatusEffects()
-	{
-		var SEs = GetStatusEffects();
-		for (e in SEs)		
-		{
-			e.Validate(true);
-			if (!e.hasValidTemporaryENs && !e.hasValidEBs)
-				e.Validate(false);
-		}
+		permanentENs = GetPermanentEffectsNumber();		
+		hasPermanentENs = permanentENs.Count > 0;		
+		hasSEChildren = GetStatusEffects().Count > 0;
 	}
 
 	private function CalculateTickDelay()
@@ -146,30 +82,18 @@ class StatusEffect extends Effect
 		else
 			delayInSecs = duration;
 	}
-	
-	var reappliedTemporaryEN;
 
 	function OnEntry() 
 	{		
 		if (hasPermanentENs)
 			ApplyPermanentEffectsNumber(ENTRY);
-		if (hasValidSEs)
-			SendStatusEffectsToManager(ENTRY);
-		
-		/*
-		If we have ticks, it will reapply effects number.
-		If we don't, we reapply in the 'else if' command.
-		This is useful to prevent the manager from reapplying
-		multiple times. It saves processing.
-		Also, this makes reapplying calculations right.
-		*/		
-		if (hasValidTemporaryENs && !reappliedTemporaryEN)		 	
-			manager.ReapplyTemporaryEffectsNumber();									
-		if (hasValidEBs)	
-			manager.ReapplyTemporaryEffectsBoolean();					
+		if (hasSEChildren)
+			SendStatusEffectsToManager(ENTRY);			
 		if (useTicks)
-			Tick();				
-		
+			Tick();		
+		else
+			manager.ReapplyTemporaryEffects();	
+			
 		if (IsInstant())
 			Expire();				
 	}
@@ -178,7 +102,7 @@ class StatusEffect extends Effect
 	{
 		if (hasPermanentENs)
 			ApplyPermanentEffectsNumber(LEAVE);	
-		if (hasValidSEs)
+		if (hasSEChildren)
 			SendStatusEffectsToManager(LEAVE);
 		if (useTicks)
 			Tick();				
@@ -189,7 +113,6 @@ class StatusEffect extends Effect
 	// For OVERTIME and PERMANENT SE.
 	function OnFrame() 
 	{
-		reappliedTemporaryEN = false;
 		// Only OVERTIME may expire of duration.		
 		if (IsOverTime() && !expired)
 		{
@@ -216,19 +139,18 @@ class StatusEffect extends Effect
 		ticksDone++;		
 		if (hasPermanentENs)
 			ApplyPermanentEffectsNumber(TICK);	
-		if (hasValidSEs)
+		if (hasSEChildren)
 			SendStatusEffectsToManager(TICK);	
 		
 		/*
 		Reapplying temporary effects when all ticks are done 
 		is useless, because a temporary effect will not last
 		for a single frame in the last tick. 		
-		*/
-		if (hasValidTemporaryENs && (ticksDone < totalTicks || IsPermanent()) && !reappliedTemporaryEN)
-		{
-			manager.ReapplyTemporaryEffectsNumber();									
-		}				
-		IncreaseTemporaryTickEffectsNumber();	
+		*/		
+		if (ticksDone > 1)
+			IncreaseTemporaryTickEffectsNumber();	
+		if (ticksDone < totalTicks || IsPermanent())		
+			manager.ReapplyTemporaryEffects();														
 	}
 
 	// For OVERTIME and PERMANENT SE. Editor prevents INSTANT being stackable.
@@ -244,11 +166,8 @@ class StatusEffect extends Effect
 		{
 			StackEffectsNumber();
 			if (hasPermanentENs)
-				ApplyPermanentEffectsNumber(ENTRY);				
-			if (hasValidTemporaryENs)
-			{
-				manager.ReapplyTemporaryEffects();				
-			}
+				ApplyPermanentEffectsNumber(ENTRY);							
+			manager.ReapplyTemporaryEffects();							
 		}
 	}
 
@@ -291,14 +210,11 @@ class StatusEffect extends Effect
 	
 	private function ApplyPermanentEffectsNumber(mode: ApplyMode)
 	{
-		var permanentEffectsAdded = false;
 		for (e in permanentENs)
-			if (e.mode == mode)
-			{				
-				manager.GetUnitAttributes().ModifyNumberPermanently(e);
-				if (!permanentEffectsAdded)
-					permanentEffectsAdded = true;					
-			}
+			if (e.mode == mode)			
+				manager.GetUnitAttributes().ModifyNumberPermanently(e);							
+		manager.ReapplyTemporaryEffects();
+		
 		/*
 		Explanation of why we need to reapply effects inside a 
 		SE instead of only inside the manager:
@@ -313,40 +229,8 @@ class StatusEffect extends Effect
 		And (2 * 0.5 = 1) -> done by 'manager.ReapplyTemporaryEffects'.
 			This method will change the current value of the attribute.
 		Now our MOVEPEED is now 1 instead of 0.5.			
-		*/
-		if (permanentEffectsAdded)
-		{
-			Debugger.instance.Log(gameObject, "Perma EN! " + mode.ToString());	
-			/*
-			We reapply temporary effects even if this SE doesn't 
-			own any, because the manager may have other SE that own 
-			temporary effects.
-			*/
-			manager.ReapplyTemporaryEffectsNumber();	
-			reappliedTemporaryEN = true;			
-		}
-		return permanentEffectsAdded;
+		*/		
 	}
-	
-	/*
-	private function TryReapplyENs()
-	{
-		
-		The problem: 
-		Reapplying effects when a SE is instant means double 
-		reapplying, because when it leaves the manager, the 
-		manager already reapplies effects too. 		
-		To ensure that double reapplying won't happen, we check
-		with a 'is not instant' condition.
-		This helps the manager to reapply only one time,
-		saving processing.
-		
-		if (hasValidTemporaryENs)
-		{			
-			manager.ReapplyTemporaryEffectsNumber();			
-		}
-	}
-	*/
 
 	private function SendStatusEffectsToManager(mode: ApplyMode)
 	{
@@ -479,16 +363,6 @@ class StatusEffect extends Effect
 		return list;
 	}
 
-	function GetUniqueAttrsNumberType(): List.<AttrNumberType>
-	{
-		var types = new List.<AttrNumberType>();
-		var ENs = GetEffectsNumber();
-		for (e in ENs)
-			if (!IsInList(e.targetAttr, types))
-				types.Add(e.targetAttr);
-		return types;
-	}
-
 	function GetPermanentEffectsNumber(): List.<EffectNumber>
 	{
 		var list = new List.<EffectNumber>();
@@ -509,33 +383,19 @@ class StatusEffect extends Effect
 		return list;
 	}
 	
-	private function GetValidCountTemporaryEffectsNumber(): int
+	function GetValidEffectsNumberForReapply()
 	{
-		var valids = 0;
+		var list = new List.<EffectNumber>();
 		var ENs = GetEffectsNumber();
 		for (e in ENs)
-			if (e.valid && !e.permanent)							
-				valids++;					
-		return valids; 						
-	}
-	
-	private function GetValidCountEffectsBoolean(): int
-	{
-		var valids = 0;
-		var EBs = GetEffectsBoolean();
-		for (e in EBs)
-			if (e.valid)							
-				valids++;					
-		return valids; 						
-	}
-	
-	private function GetValidCountStatusEffects(): int
-	{
-		var valids = 0;
-		var SEs = GetStatusEffects();
-		for (e in SEs)
-			if (e.valid)							
-				valids++;					
-		return valids; 						
+		{
+			if (e.permanent)
+				continue;			
+			if (e.mode == ENTRY)
+				list.Add(e);
+			if (useTicks && e.mode == TICK)
+				list.Add(e);						
+		}
+		return list;
 	}
 }

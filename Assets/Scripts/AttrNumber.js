@@ -61,7 +61,8 @@ class AttrNumber
 				multiplyEffects.Add(effects[i]);
 		}
 		
-		currentValue = baseValue;	
+		currentValue = baseValue;			
+		
 		for (effect in multiplyEffects)			
 		{
 			var stackedValue = effect.value;
@@ -74,7 +75,7 @@ class AttrNumber
 		}	
 		for (effect in sumEffects)	
 		{
-			currentValue += effect.value * effect.stacks;
+			currentValue += effect.value * effect.stacks;			
 			if (effect.permanent)
 				baseValue += effect.value;
 		}	
@@ -82,7 +83,7 @@ class AttrNumber
 		if (currentValue > roofLimit)
 			currentValue = roofLimit;
 		if (currentValue < floorLimit)
-			currentValue = floorLimit;		
+			currentValue = floorLimit;				
 	}
 
 }
