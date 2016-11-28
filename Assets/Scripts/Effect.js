@@ -13,6 +13,8 @@ enum ApplyMode { ENTRY, TICK, LEAVE };
 var mode: ApplyMode;
 
 private var id: int;
+@Header("Valid is Read-only")
+var valid: boolean;
 
 function SetID(id: int)
 {
@@ -22,4 +24,9 @@ function SetID(id: int)
 function GetID()
 {
 	return id;
+}
+
+function Validate(valid: boolean)
+{
+	this.valid = valid;
 }

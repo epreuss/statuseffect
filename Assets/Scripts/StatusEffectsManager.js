@@ -27,6 +27,7 @@ private var instanceID: int;
 
 private var onListAdd: Function;
 private var onListRemove: Function;
+private var onSEStack: Function;
 
 function Awake()
 {
@@ -43,12 +44,17 @@ function Update()
 			SE.OnFrame();					
 		lock = false;
 	}
+	if (Input.GetKeyDown(KeyCode.P))
+	{
+		statusEffects[0].Purge();
+	}
 }
 
-function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Function)
+function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Function, onSEStack: Function)
 {
 	this.onListAdd = onListAdd;
 	this.onListRemove = onListRemove;
+	this.onSEStack = onSEStack;
 }
 
 /*
@@ -60,12 +66,15 @@ function OnStatusEffectReceive(newSE: StatusEffect)
 	var SE = HasStatusEffectByID(newSE.GetID());
 	if (SE != null) // Already has the SE.
 	{
+		Debugger.instance.Log(gameObject, "Double SE");
 		if (SE.stackable)
+		{			
 			SE.Stack();
-		else if (SE.independent)
-			AddStatusEffect(newSE);		
-		else 
-			SE.RefreshDuration();
+			onSEStack(newSE);
+		}
+		if (SE.refreshable)
+			SE.Refresh();
+		Destroy(newSE.gameObject);
 	}
 	else // Doesn't have the new SE.
 		AddStatusEffect(newSE);
@@ -85,18 +94,29 @@ function RemoveStatusEffect(deadSE: StatusEffect): IEnumerator
 	else	
 	{
 		lock = true;		
+		var reapplyEN = false;
+		var reapplyEB = false;
 		for (var i = 0; i < statusEffects.Count; i++)
 			if (statusEffects[i].GetID() == deadSE.GetID())
 			{
 				Debugger.instance.Log(gameObject, "Removed " + deadSE);
 				onListRemove(deadSE);
+				reapplyEN = statusEffects[i].hasValidTemporaryENs;					
+				reapplyEB = statusEffects[i].hasValidEBs;					
 				statusEffects[i].OnRemoveFromManager();			
 				statusEffects.RemoveAt(i);					
 				break;
 			}		
 		lock = false;
-		Debugger.instance.Log(gameObject, "Reapply - Leave SE");			
-		ReapplyTemporaryEffects();				
+		/*
+		If an SE reapplied effects, it means that it modified 
+		variables temporarily. There are SEs that don't even reapply
+		because they are bad designed in the inspector.
+		*/
+		if (reapplyEN)
+			ReapplyTemporaryEffectsNumber();
+		if (reapplyEB)
+			ReapplyTemporaryEffectsBoolean();
 	}
 }
 
@@ -121,8 +141,8 @@ private function AddStatusEffect(newSE: StatusEffect): IEnumerator
 		lock = false;
 
 		// This order is important!
-		Debugger.instance.Log(gameObject, "Reapply - Entry SE");			
-		ReapplyTemporaryEffects();
+		// Debugger.instance.Log(gameObject, "Reapply - Entry SE");			
+		// ReapplyTemporaryEffects();
 		newSE.SetManager(this);	
 		newSE.OnEntry();				
 	}
@@ -146,7 +166,7 @@ would reapply the permanent effect multiple times. That is wrong.
 That's why this method only works with temporary effects.
 */
 function ReapplyTemporaryEffects()
-{
+{	
 	ReapplyTemporaryEffectsNumber();
 	ReapplyTemporaryEffectsBoolean();
 }
@@ -156,8 +176,9 @@ Important:
 - This method DOES NOT reapply permanent effects!
 - It DOES NOT reapply LEAVE effects!
 */
-private function ReapplyTemporaryEffectsNumber()
+function ReapplyTemporaryEffectsNumber()
 {
+	Debugger.instance.Log(gameObject, "Reapply Numbers");
 	var allEN = new List.<EffectNumber>();
 	for (SE in statusEffects)
 	{
@@ -168,18 +189,17 @@ private function ReapplyTemporaryEffectsNumber()
 	var effectsForEachAttr = new List.<EffectNumber>();
 	for (var type = 0; type < System.Enum.GetValues(typeof(AttrNumberType)).Length; type++)
 	{
-		for (EN in allEN)
-		{
-			if (EN.targetAttr == type && !EN.permanent && EN.mode != LEAVE)
-				effectsForEachAttr.Add(EN);
-		}		
+		for (EN in allEN)		
+			if (EN.targetAttr == type && !EN.permanent && EN.mode != LEAVE && EN.valid)						
+				effectsForEachAttr.Add(EN);					
 		unitAttr.RecalculateAttrNumber(type, effectsForEachAttr);
 		effectsForEachAttr.Clear();
 	}
 }
 
-private function ReapplyTemporaryEffectsBoolean()
+function ReapplyTemporaryEffectsBoolean()
 {
+	Debugger.instance.Log(gameObject, "Reapply Booleans");
 	var allEB = new List.<EffectBoolean>();
 	for (SE in statusEffects)
 	{

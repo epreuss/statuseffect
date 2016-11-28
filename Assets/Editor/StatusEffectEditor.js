@@ -9,24 +9,32 @@ class StatusEffectEditor extends Editor
     function OnInspectorGUI()
     {   
         script = target;
-
+		
         if (ShowIsChild())
         {
+			var message = "This box must be checked as true ONLY if this Status Effect" + 
+				" is inside of the Effects list of another Status Effect, which is its parent." + 				
+				" Also, move this Status Effect to its parent's transform." +
+				" Then, this Status Effect will be applied according to the selected mode.";
+			EditorGUILayout.HelpBox(message, UnityEditor.MessageType.None);
         	ShowMode();        	
         }
     	EditorGUILayout.Space();  
-
-        ShowSprite();      
-        EditorGUILayout.Space();  
-
+        
 		ShowEffectsList();
 		EditorGUILayout.Space();
   
   		ShowDuration();
     	EditorGUILayout.Space();
 
-        //EditorGUILayout.HelpBox("OPA", UnityEditor.MessageType.None);
-        
+		if (!script.IsInstant())
+		{
+			ShowStackOptions();
+			EditorGUILayout.Space();
+		}		               
+		
+		ShowHUD();      
+        EditorGUILayout.Space();  
     }
 
     private function ShowIsChild()
@@ -41,8 +49,14 @@ class StatusEffectEditor extends Editor
         script.mode = EditorGUILayout.EnumPopup("Activation Mode", script.mode);
     }
 
-    private function ShowSprite()
+    private function ShowHUD()
     {
+		if (script.IsInstant())
+		{
+			script.showHUD = false;
+			return;
+		}
+		
     	ShowBoldLabel("HUD");
         script.showHUD = EditorGUILayout.Toggle("Show On HUD", script.showHUD);	
         if (script.showHUD)
@@ -92,6 +106,8 @@ class StatusEffectEditor extends Editor
   		else
   		{
   			script.duration = EditorGUILayout.FloatField("Duration", script.duration);
+			if (script.duration < 0.1)
+				script.duration = 0.1;
 			script.useTicks = EditorGUILayout.Toggle("Use Tick", script.useTicks);
 			if (script.useTicks)	    	
 				script.totalTicks = EditorGUILayout.Slider("Total Ticks", script.totalTicks, 3, 10);     	
@@ -104,4 +120,28 @@ class StatusEffectEditor extends Editor
     {
 		EditorGUILayout.LabelField(message, EditorStyles.boldLabel);  
     }
+	
+	private function ShowStackOptions()
+	{
+		ShowBoldLabel("Stack Options");
+		if (script.IsOverTime())
+			script.refreshable = EditorGUILayout.Toggle("Refreshable", script.refreshable);
+		else
+			script.refreshable = false;
+		script.stackable = EditorGUILayout.Toggle("Stackable", script.stackable);		
+		if (script.stackable)
+		{
+			script.stackIncrease = EditorGUILayout.IntField("Stack Increase", script.stackIncrease);
+			if (script.stackIncrease < 1)
+				script.stackIncrease = 1;
+			script.maxStacks = EditorGUILayout.IntField("Max Stacks", script.maxStacks);
+			if (script.maxStacks < 2)
+				script.maxStacks = 2;
+		}
+		else
+		{
+			script.stackIncrease = 1;
+			script.maxStacks = 2;
+		}
+	}
 }

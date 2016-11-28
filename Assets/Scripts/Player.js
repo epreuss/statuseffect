@@ -6,8 +6,8 @@
 private var controls: PlayerControls;
 private var attr: UnitAttributes;
 
-var se: StatusEffect;
-var se2: StatusEffect;
+var se: String;
+var se2: String;
 
 function Start() 
 {
@@ -17,26 +17,28 @@ function Start()
 
 function Update() 
 {
+	if (Input.GetKeyDown(KeyCode.T))	
+		Tests();	
+	if (Input.GetKeyDown(KeyCode.Y))	
+		Tests2();	
+	
 	if (attr.stun)
 		return;
 	
 	if (controls.right)
 		transform.position.x += attr.moveSpeed * Time.deltaTime;
 	if (controls.left)
-		transform.position.x -= attr.moveSpeed * Time.deltaTime;
-	
-	if (Input.GetKeyDown(KeyCode.T))	
-		Tests();	
-	if (Input.GetKeyDown(KeyCode.Y))	
-		Tests2();	
+		transform.position.x -= attr.moveSpeed * Time.deltaTime;	
 }
 
 function Tests()
 {	
-	GetComponent(StatusEffectsManager).OnStatusEffectReceive(se);
+	var SE = StatusEffectDatabase.instance.GetSE(se);
+	GetComponent(StatusEffectsManager).OnStatusEffectReceive(SE);
 }
 
 function Tests2()
 {	
-	GetComponent(StatusEffectsManager).OnStatusEffectReceive(se2);
+	var SE = StatusEffectDatabase.instance.GetSE(se2);
+	GetComponent(StatusEffectsManager).OnStatusEffectReceive(SE);
 }

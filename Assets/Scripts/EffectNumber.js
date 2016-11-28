@@ -24,10 +24,23 @@ class EffectNumber extends Effect
 	var permanent: boolean;
 	
 	private var baseValue: Number;	
+	@HideInInspector var stacks: int;
 	
-	function Start()
+	function Awake()
 	{
+		stacks = 1;
 		baseValue = value;
+	}
+	
+	function StackForTemporary()
+	{
+		if (!permanent)
+			stacks++;
+	}
+	
+	function Reset()
+	{
+		value = baseValue;
 	}
 	
 	/*
@@ -42,7 +55,7 @@ class EffectNumber extends Effect
 	Note: Only TICK non-permanent Effects Number should
 	be stacked. This condition is checked in the Status Effect.
 	*/
-	function StackValue()
+	function IncreaseValue()
 	{
 		if (type == SUM)		
 			value += baseValue;

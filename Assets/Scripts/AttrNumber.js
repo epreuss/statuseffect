@@ -64,17 +64,21 @@ class AttrNumber
 		currentValue = baseValue;	
 		for (effect in multiplyEffects)			
 		{
-			currentValue *= effect.value;
+			var stackedValue = effect.value;
+			for (i = 0; i < effect.stacks; i++)
+				stackedValue *= effect.value;
+			
+			currentValue *= stackedValue;
 			if (effect.permanent)
-				baseValue *= effect.value;
+				baseValue *= stackedValue;
 		}	
 		for (effect in sumEffects)	
 		{
-			currentValue += effect.value;
+			currentValue += effect.value * effect.stacks;
 			if (effect.permanent)
 				baseValue += effect.value;
-		}						
-
+		}	
+		
 		if (currentValue > roofLimit)
 			currentValue = roofLimit;
 		if (currentValue < floorLimit)
