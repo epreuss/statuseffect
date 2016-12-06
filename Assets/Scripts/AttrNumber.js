@@ -49,7 +49,7 @@ class AttrNumber
 	}
 
 	function Recalculate(effects: List.<EffectNumber>)
-	{
+	{			
 		reseted = false;
 		var sumEffects = new List.<EffectNumber>();
 		var multiplyEffects = new List.<EffectNumber>();
@@ -65,7 +65,7 @@ class AttrNumber
 		
 		for (effect in multiplyEffects)			
 		{
-			var stackedValue = effect.value;
+			var stackedValue = 1.0;
 			for (i = 0; i < effect.stacks; i++)
 				stackedValue *= effect.value;
 			

@@ -3,5 +3,3 @@
 -> same to refresh
 
 -> test many different SE toguether!
-
--> cleaning useless manager reapplying

@@ -155,7 +155,7 @@ That's why this method only works with temporary effects.
 */
 function ReapplyTemporaryEffects()
 {	
-	//Debugger.instance.Log(gameObject, "Reapply");
+	Debugger.instance.Log(gameObject, "Reapply");
 	ReapplyTemporaryEffectsNumber();
 	ReapplyTemporaryEffectsBoolean();
 }

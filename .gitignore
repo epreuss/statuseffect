@@ -1,6 +1,7 @@
 /Temp/
 /Library/
-Library/
+
+ongoing.txt
 
 *.sln
 *.csproj
