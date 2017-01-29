@@ -54,6 +54,8 @@ class EffectNumber extends Effect
 
 	Note: Only TICK non-permanent Effects Number should
 	be stacked. This condition is checked in the Status Effect.
+	That's because permanent TICKs don't need to stack
+	to apply their effect.
 	*/
 	function IncreaseValue()
 	{

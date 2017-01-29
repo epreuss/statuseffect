@@ -9,10 +9,10 @@ for units to use in their routines.
 
 - These primitives are the current value
 of an AttrNumber or AttrBoolean, and
-these are the only classes that can modify
+they are the only classes that can modify
 the primitives values.
 
-Unit examples: Player, enemy, bots.
+Unit examples: Player, Enemies, Bots.
 */
 
 var numbers: List.<AttrNumber>;
@@ -55,7 +55,6 @@ private function GetAttrBoolean(targetType: AttrBooleanType): AttrBoolean
 			return b;
 	return null;
 }
-
 
 function RecalculateAttrNumber(type: AttrNumberType, effectsNumber: List.<EffectNumber>)
 {

@@ -177,7 +177,8 @@ class StatusEffect extends Effect
 		timerDuration = 0;			
 		ticksDone = 0;
 		timerTick = 0;
-		OnEntry();		/*
+		OnEntry();
+		/*
 		ResetTemporaryTickEffectsNumber();
 		ResetTickVariables();
 		Tick();
@@ -258,15 +259,17 @@ class StatusEffect extends Effect
 
 	private function StackEffectsNumber(): boolean
 	{
-		var hadStack = false;
 		var ENs = GetEffectsNumber();
 		for (e in ENs)
 		{
 			if (e.mode == ENTRY)				
 			{
-				if (!e.permanent)									
-					e.StackForTemporary();										
-			}		
+				e.StackForTemporary();										
+			}	
+			else if (e.mode == LEAVE)
+			{
+				e.IncreaseValue();
+			}	
 			else if (e.mode == TICK)
 			{
 				if (e.permanent)				
@@ -323,6 +326,17 @@ class StatusEffect extends Effect
 	{
 		if (canDestroy)		
 			Destroy(gameObject);		
+		else
+		{
+			/*
+			Reset variables because this SE was just used and will be used again. 
+			This SE is a child. Eg.: Enigma's Q.
+			*/
+			timerDuration = 0;			
+			ticksDone = 0;
+			timerTick = 0;
+			expired = false;
+		}
 	}
 	
 	// Getters.

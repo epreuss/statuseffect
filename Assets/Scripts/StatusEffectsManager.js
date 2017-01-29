@@ -5,7 +5,7 @@
 import System.Collections.Generic;
 
 /*
-Every unit must have an EffectsManager if they want
+Every unit must have an Status Effects Manager if they want
 to use Effects in the primitive variables of UnitAttributes.
 
 This manager will receive Status Effects, which are 
