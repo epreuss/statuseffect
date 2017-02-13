@@ -67,6 +67,11 @@ function RecalculateAttrNumber(type: AttrNumberType, effectsNumber: List.<Effect
 	if (reapplyChangesNothing)
 	 	return;
 
+	// By now, effects are valid. Let's use them.
+	
+	for (effect in effectsNumber)
+		UpdateIfAdvancedAttrNumber(effect);
+		
 	if (effectsNumber.Count > 0)
 		attr.Recalculate(effectsNumber);
 	else
@@ -86,6 +91,8 @@ function RecalculateAttrBoolean(type: AttrBooleanType, effectsBoolean: List.<Eff
 	if (reapplyChangesNothing)
 	 	return;
 	
+	// By now, effects are valid. Let's use them.
+	
 	if (effectsBoolean.Count > 0)
 		attr.Recalculate(effectsBoolean);
 	else
@@ -99,8 +106,16 @@ function ModifyNumberPermanently(effect: EffectNumber)
 	var attr = GetAttrNumber(effect.targetAttr);
 	if (attr == null)
 		return;
-		
+
+	UpdateIfAdvancedAttrNumber(effect);
+	
 	attr.ModifyPermanently(effect);
+}
+
+private function UpdateIfAdvancedAttrNumber(effect: EffectNumber)
+{
+	if (effect.useAdvanced)				
+		effect.otherAttrBase = GetAttrNumber(effect.baseValueOf).baseValue;		
 }
 
 private function UpdatePrimitiveNumber(attr: AttrNumber)

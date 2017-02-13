@@ -1,6 +1,5 @@
 ﻿#pragma strict
 
-
 @CustomEditor (StatusEffect)
 class StatusEffectEditor extends Editor 
 {

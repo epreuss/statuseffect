@@ -38,7 +38,12 @@ class AttrNumber
 	{
 		reseted = false;
 		if (effect.type == SUM)
-			baseValue += effect.value;
+		{
+			if (effect.useAdvanced)
+				baseValue += effect.value * effect.otherAttrBase;
+			else
+				baseValue += effect.value;
+		}			
 		if (effect.type == MULTIPLY)
 			baseValue *= effect.value;
 	
@@ -62,22 +67,37 @@ class AttrNumber
 		}
 		
 		currentValue = baseValue;			
+		var stackedMultiplier: float;
 		
 		for (effect in multiplyEffects)			
 		{
-			var stackedValue = 1.0;
+			stackedMultiplier = 1.0;
 			for (i = 0; i < effect.stacks; i++)
-				stackedValue *= effect.value;
-			
-			currentValue *= stackedValue;
-			if (effect.permanent)
-				baseValue *= stackedValue;
+				stackedMultiplier *= effect.value;
+								
+			currentValue *= stackedMultiplier;
+			if (effect.permanent)				
+				baseValue *= stackedMultiplier;										
 		}	
 		for (effect in sumEffects)	
 		{
-			currentValue += effect.value * effect.stacks;			
-			if (effect.permanent)
-				baseValue += effect.value;
+			if (effect.useAdvanced)			
+			{								
+				stackedMultiplier = 1.0;
+				for (i = 0; i < effect.stacks; i++)
+					stackedMultiplier *= effect.value;
+				
+				var sum = stackedMultiplier * effect.otherAttrBase;
+				currentValue += sum;
+				if (effect.permanent)				
+					baseValue += sum;											
+			}
+			else
+			{			
+				currentValue += effect.value * effect.stacks;			
+				if (effect.permanent)
+					baseValue += effect.value;
+			}
 		}	
 		
 		if (currentValue > roofLimit)
@@ -85,5 +105,4 @@ class AttrNumber
 		if (currentValue < floorLimit)
 			currentValue = floorLimit;				
 	}
-
 }

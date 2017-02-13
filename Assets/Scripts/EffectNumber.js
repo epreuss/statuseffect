@@ -23,8 +23,13 @@ class EffectNumber extends Effect
 	var value: Number;
 	var permanent: boolean;
 	
+	@Header("Advanced")
+	var useAdvanced: boolean;
+	var baseValueOf: AttrNumberType;
+	
 	private var baseValue: Number;	
 	@HideInInspector var stacks: int;
+	@HideInInspector var otherAttrBase: Number;
 	
 	function Awake()
 	{
@@ -42,7 +47,7 @@ class EffectNumber extends Effect
 	{
 		value = baseValue;
 	}
-	
+		
 	/*
 	If we don't stack TICK Effects Number, they would
 	always apply the same value to the target Unit.
