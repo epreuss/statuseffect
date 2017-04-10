@@ -98,9 +98,15 @@ class StatusEffectEditor extends Editor
 			script.duration = 0;
 			script.useTicks = EditorGUILayout.Toggle("Use Tick", script.useTicks);
 			if (script.useTicks)
-				script.delayInSecs = EditorGUILayout.Slider("Delay In Secs", script.delayInSecs, 0.1, 5);     
+			{
+				script.delayInSecs = EditorGUILayout.Slider("Delay In Secs", script.delayInSecs, 0.1, 10);     
+				script.startWithTick = EditorGUILayout.Toggle("Start with Tick", script.startWithTick);
+			}
 			else
+			{
+				script.startWithTick = true;
 				script.delayInSecs = 0.1;
+			}
 		}
   		else
   		{
@@ -108,10 +114,23 @@ class StatusEffectEditor extends Editor
 			if (script.duration < 0.1)
 				script.duration = 0.1;
 			script.useTicks = EditorGUILayout.Toggle("Use Tick", script.useTicks);
-			if (script.useTicks)	    	
+			if (script.useTicks)	
+			{				
 				script.totalTicks = EditorGUILayout.Slider("Total Ticks", script.totalTicks, 3, 10);     	
+				script.startWithTick = EditorGUILayout.Toggle("Start with Tick", script.startWithTick);
+				if (!script.startWithTick)
+				{
+					var message = "If the Status Effect does not start with a tick, the total" +
+						" number of ticks is reduced by 1. Example: It shows 3 Total Ticks but" + 
+						" with this boolean active, it will be actually 2.";
+					EditorGUILayout.HelpBox(message, UnityEditor.MessageType.None);
+				}
+			}
 			else
+			{
+				script.startWithTick = true;
 				script.totalTicks = 3;
+			}
     	}
     }
 

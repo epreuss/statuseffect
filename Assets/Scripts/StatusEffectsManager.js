@@ -28,6 +28,7 @@ private var instanceID: int;
 private var onListAdd: Function;
 private var onListRemove: Function;
 private var onSEStack: Function;
+private var onSEPop: Function;
 
 function Awake()
 {
@@ -45,21 +46,24 @@ function Update()
 		lock = false;
 	}
 	if (Input.GetKeyDown(KeyCode.P))	
-		statusEffects[0].Purge();
+		PurgeStatusEffect(StatusEffectDatabase.instance.GetSEID("Testings 2"));
+	if (Input.GetKeyDown(KeyCode.L))	
+		PopStatusEffect(StatusEffectDatabase.instance.GetSEID("Testings 2"));
 	if (Input.GetKeyDown(KeyCode.R))	
 		ReapplyTemporaryEffects();
 }
 
-function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Function, onSEStack: Function)
+function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Function, onSEStack: Function, onSEPop: Function)
 {
 	this.onListAdd = onListAdd;
 	this.onListRemove = onListRemove;
 	this.onSEStack = onSEStack;
+	this.onSEPop = onSEPop;
 }
 
 /*
-Other units call this method to send
-Status Effects to the unit associated to this manager.
+Called by other units to send SEs 
+to the unit associated to this manager.
 */
 function OnStatusEffectReceive(newSE: StatusEffect) 
 {
@@ -70,7 +74,7 @@ function OnStatusEffectReceive(newSE: StatusEffect)
 		if (SE.stackable)
 		{			
 			SE.Stack();
-			onSEStack(newSE);
+			onSEStack(newSE.GetID());
 		}
 		if (SE.refreshable)
 			SE.Refresh();
@@ -78,6 +82,36 @@ function OnStatusEffectReceive(newSE: StatusEffect)
 	}
 	else // Doesn't have the new SE.
 		AddStatusEffect(newSE);
+}
+
+/*
+Called by units that want to purge SEs.
+*/
+function PurgeStatusEffect(SEID: int)
+{
+	for (s in statusEffects)
+		if (s.GetID() == SEID)
+		{
+			s.Purge();
+			break;
+		}
+}
+
+/*
+Called by units that want to pop SEs.
+*/
+function PopStatusEffect(SEID: int)
+{
+	for (s in statusEffects)
+		if (s.GetID() == SEID)
+		{
+			// If stacks are 1, SE is purged instead of popped.
+			var willBePurged = s.currentStacks == 1;
+			s.Pop();
+			if (!willBePurged)								
+				onSEPop(SEID);			
+			break;
+		}	
 }
 
 /*

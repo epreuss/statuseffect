@@ -10,7 +10,7 @@ var SEHUDs: List.<SEHUD>;
 function Start() 
 {
 	SEHUDs = new List.<SEHUD>();
-	targetSEManager.RegisterListOperationsCallbacks(OnListAdd, OnListRemove, OnSEStack);
+	targetSEManager.RegisterListOperationsCallbacks(OnListAdd, OnListRemove, OnSEStack, OnSEPop);
 }
 
 function OnListAdd(newSE: StatusEffect)
@@ -32,10 +32,17 @@ function OnListRemove(deadSE: StatusEffect)
 	}
 }
 
-function OnSEStack(stackedSE: StatusEffect)
+function OnSEStack(stackedSEID: int)
 {
 	for (hud in SEHUDs)		
-		if (hud.targetSE.GetID() == stackedSE.GetID())
+		if (hud.targetSE.GetID() == stackedSEID)
+			hud.UpdateStack();	
+}
+
+function OnSEPop(poppedSEID: int)
+{
+	for (hud in SEHUDs)		
+		if (hud.targetSE.GetID() == poppedSEID)
 			hud.UpdateStack();	
 }
 

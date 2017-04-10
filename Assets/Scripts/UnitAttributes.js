@@ -1,6 +1,6 @@
 ﻿#pragma strict
 
-@script RequireComponent(Unit)
+//@script RequireComponent(Unit)
 @script RequireComponent(StatusEffectsManager)
 
 /*
@@ -15,6 +15,12 @@ the primitives values.
 Unit examples: Player, Enemies, Bots.
 */
 
+/* 
+These lists are public because we should modify it
+as we want in the inspector.
+They must not be modified via script!
+To modify them, we use SEs.
+*/
 var numbers: List.<AttrNumber>;
 var booleans: List.<AttrBoolean>;
 
@@ -129,6 +135,7 @@ private function UpdatePrimitiveNumber(attr: AttrNumber)
 			moveSpeed = attr.GetCurrentValue();
 			break;
 	}
+	SendMessage("onAttrNumberUpdate", attr.type);
 }
 
 private function UpdatePrimitiveBoolean(attr: AttrBoolean)
@@ -140,4 +147,9 @@ private function UpdatePrimitiveBoolean(attr: AttrBoolean)
 			unit.OnStun(stun);		
 			break;		
 	}
+	SendMessage("onAttrBooleanUpdate", attr.type);
 }
+
+function onAttrNumberUpdate(type: AttrNumberType) {}
+
+function onAttrBooleanUpdate(type: AttrBooleanType) {}

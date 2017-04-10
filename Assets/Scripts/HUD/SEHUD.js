@@ -36,4 +36,6 @@ function UpdateStack()
 {
 	if (targetSE.currentStacks > 1)
 		stack.text = targetSE.currentStacks + "";
+	else
+		stack.text = "";
 }

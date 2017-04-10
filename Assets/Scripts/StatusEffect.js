@@ -29,6 +29,7 @@ class StatusEffect extends Effect
 	var isChild: boolean; 
 	var showHUD: boolean;
 	var canDestroy: boolean;
+	var startWithTick: boolean;
 	
 	// Duration.
 	var duration: float;
@@ -63,6 +64,8 @@ class StatusEffect extends Effect
 		canDestroy = !isChild;
 		if (useTicks && !IsPermanent())
 			CalculateTickDelay();		
+		if (!startWithTick)
+			totalTicks -= 1;
 					
 		InitializeListsAndBooleans();		
 	}
@@ -89,7 +92,7 @@ class StatusEffect extends Effect
 			ApplyPermanentEffectsNumber(ENTRY);
 		if (hasSEChildren)
 			SendStatusEffectsToManager(ENTRY);			
-		if (useTicks)
+		if (startWithTick && useTicks)
 			Tick();		
 		else
 			manager.ReapplyTemporaryEffects();	
@@ -170,6 +173,19 @@ class StatusEffect extends Effect
 			manager.ReapplyTemporaryEffects();							
 		}
 	}
+	
+	// For OVERTIME and PERMANENT only.
+	function Pop()
+	{
+		currentStacks -= 1;
+		if (currentStacks == 0)		
+			Purge();
+		else
+		{
+			StackEffectsNumber();
+			manager.ReapplyTemporaryEffects();							
+		}
+	}
 
 	// For OVERTIME only. Editor prevents other durations from being refreshable.
 	function Refresh() 
@@ -177,12 +193,7 @@ class StatusEffect extends Effect
 		timerDuration = 0;			
 		ticksDone = 0;
 		timerTick = 0;
-		OnEntry();
-		/*
-		ResetTemporaryTickEffectsNumber();
-		ResetTickVariables();
-		Tick();
-		*/
+		OnEntry();		
 	}
 	
 	function Expire()
@@ -248,35 +259,31 @@ class StatusEffect extends Effect
 			if (e.mode == TICK && !e.permanent)			 				
 				e.IncreaseValue();							
 	}
-	
-	private function ResetTemporaryTickEffectsNumber()
-	{
-		var ENs = GetEffectsNumber();
-		for (e in ENs)
-			if (e.mode == TICK && !e.permanent)			 				
-				e.Reset();					
-	}	
-
+		
 	private function StackEffectsNumber(): boolean
 	{
 		var ENs = GetEffectsNumber();
 		for (e in ENs)
 		{
-			if (e.mode == ENTRY)				
+			e.Reset();
+			for (var i = 0; i < currentStacks-1; i++)
 			{
-				e.StackForTemporary();										
-			}	
-			else if (e.mode == LEAVE)
-			{
-				e.IncreaseValue();
-			}	
-			else if (e.mode == TICK)
-			{
-				if (e.permanent)				
-					e.IncreaseValue();					
-				else				
-					e.StackForTemporary();													
-			}				
+				if (e.mode == ENTRY)				
+				{
+					e.StackForTemporary();										
+				}	
+				else if (e.mode == LEAVE)
+				{
+					e.IncreaseValue();
+				}	
+				else if (e.mode == TICK)
+				{
+					if (e.permanent)				
+						e.IncreaseValue();					
+					else				
+						e.StackForTemporary();													
+				}
+			}			
 		}		
 	}
 

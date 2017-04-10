@@ -37,15 +37,10 @@ class EffectNumber extends Effect
 		baseValue = value;
 	}
 	
-	function StackForTemporary()
-	{
-		if (!permanent)
-			stacks++;
-	}
-	
 	function Reset()
 	{
-		value = baseValue;
+		stacks = 1;
+		value = baseValue;		
 	}
 		
 	/*
@@ -70,6 +65,12 @@ class EffectNumber extends Effect
 			value *= baseValue;
 	}
 	
+	function StackForTemporary()
+	{
+		if (!permanent)
+			stacks++;
+	}
+		
 	function ToString()
 	{
 		return gameObject.name;
