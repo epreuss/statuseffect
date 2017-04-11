@@ -28,7 +28,7 @@ class StatusEffectEditor extends Editor
 
 		if (!script.IsInstant())
 		{
-			ShowStackOptions();
+			ShowDuplicationOptions();
 			EditorGUILayout.Space();
 		}		               
 		
@@ -139,27 +139,41 @@ class StatusEffectEditor extends Editor
 		EditorGUILayout.LabelField(message, EditorStyles.boldLabel);  
     }
 	
-	private function ShowStackOptions()
+	private function ShowDuplicationOptions()
 	{
-		ShowBoldLabel("Stack Options");
-		if (script.IsOverTime())
-			script.refreshable = EditorGUILayout.Toggle("Refreshable", script.refreshable);
+		ShowBoldLabel("Duplication Options");
+		if (script.IsOverTime() || script.IsPermanent())
+			script.independent = EditorGUILayout.Toggle("Independent", script.independent);
 		else
-			script.refreshable = false;
-		script.stackable = EditorGUILayout.Toggle("Stackable", script.stackable);		
-		if (script.stackable)
+			script.independent = false;
+					
+		if (!script.independent)
 		{
-			script.stackIncrease = EditorGUILayout.IntField("Stack Increase", script.stackIncrease);
-			if (script.stackIncrease < 1)
+			if (script.IsOverTime())
+				script.refreshable = EditorGUILayout.Toggle("Refreshable", script.refreshable);
+			else
+				script.refreshable = false;
+		
+			script.stackable = EditorGUILayout.Toggle("Stackable", script.stackable);		
+			if (script.stackable)
+			{
+				script.stackIncrease = EditorGUILayout.IntField("Stack Increase", script.stackIncrease);
+				if (script.stackIncrease < 1)
+					script.stackIncrease = 1;
+				script.maxStacks = EditorGUILayout.IntField("Max Stacks", script.maxStacks);
+				if (script.maxStacks < 2)
+					script.maxStacks = 2;
+			}
+			else
+			{
 				script.stackIncrease = 1;
-			script.maxStacks = EditorGUILayout.IntField("Max Stacks", script.maxStacks);
-			if (script.maxStacks < 2)
 				script.maxStacks = 2;
+			}
 		}
 		else
 		{
-			script.stackIncrease = 1;
-			script.maxStacks = 2;
+			script.refreshable = false;
+			script.stackable = false;
 		}
 	}
 }

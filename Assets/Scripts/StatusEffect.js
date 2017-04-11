@@ -30,6 +30,7 @@ class StatusEffect extends Effect
 	var showHUD: boolean;
 	var canDestroy: boolean;
 	var startWithTick: boolean;
+	var independent: boolean;
 	
 	// Duration.
 	var duration: float;
@@ -167,7 +168,7 @@ class StatusEffect extends Effect
 		var actuallyStacked = currentStacks - oldStacks > 0;
 		if (actuallyStacked)
 		{
-			StackEffectsNumber();
+			ReStackEffectsNumber();
 			if (hasPermanentENs)
 				ApplyPermanentEffectsNumber(ENTRY);							
 			manager.ReapplyTemporaryEffects();							
@@ -182,7 +183,7 @@ class StatusEffect extends Effect
 			Purge();
 		else
 		{
-			StackEffectsNumber();
+			ReStackEffectsNumber();
 			manager.ReapplyTemporaryEffects();							
 		}
 	}
@@ -249,7 +250,7 @@ class StatusEffect extends Effect
 		var statusEffects = GetStatusEffects();
 		for (se in statusEffects)
 			if (se.mode == mode)
-				manager.OnStatusEffectReceive(se);
+				manager.ReceiveStatusEffect(se);
 	}
 	
 	private function IncreaseTemporaryTickEffectsNumber()
@@ -260,12 +261,32 @@ class StatusEffect extends Effect
 				e.IncreaseValue();							
 	}
 		
-	private function StackEffectsNumber(): boolean
+	/* 
+	For each function call, we re-stack every effect
+	and recalculate all stacks and increased values.
+	*/
+	// Bug: If stack is popped, temporaries ticks bugs values.
+	private function ReStackEffectsNumber(): boolean
 	{
 		var ENs = GetEffectsNumber();
 		for (e in ENs)
 		{
-			e.Reset();
+			var isTickTemporary = e.mode == TICK && !e.permanent;
+			if (isTickTemporary)
+			{
+				/*
+				This is a special case because temporary TICK effects
+				have their value increased by each tick 
+				(see function IncreaseTemporaryTickEffectsNumber).
+				We must not reset the increased value when re-stacking!
+				That said, we keep the increased value and
+				reset only the stacks.
+				*/
+				e.ResetStacks(); 
+			}				
+			else
+				e.FullReset();
+			
 			for (var i = 0; i < currentStacks-1; i++)
 			{
 				if (e.mode == ENTRY)				
@@ -275,6 +296,10 @@ class StatusEffect extends Effect
 				else if (e.mode == LEAVE)
 				{
 					e.IncreaseValue();
+					/* 
+					We don't stack temporary LEAVE because that 
+					makes no sense. They must be always permanent.
+					*/
 				}	
 				else if (e.mode == TICK)
 				{

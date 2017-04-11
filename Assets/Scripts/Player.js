@@ -34,11 +34,11 @@ function Update()
 function Tests()
 {	
 	var SE = StatusEffectDatabase.instance.GetSE(se);
-	GetComponent(StatusEffectsManager).OnStatusEffectReceive(SE);
+	GetComponent(StatusEffectsManager).ReceiveStatusEffect(SE);
 }
 
 function Tests2()
 {	
 	var SE = StatusEffectDatabase.instance.GetSE(se2);
-	GetComponent(StatusEffectsManager).OnStatusEffectReceive(SE);
+	GetComponent(StatusEffectsManager).ReceiveStatusEffect(SE);
 }

@@ -65,20 +65,25 @@ function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Func
 Called by other units to send SEs 
 to the unit associated to this manager.
 */
-function OnStatusEffectReceive(newSE: StatusEffect) 
+function ReceiveStatusEffect(newSE: StatusEffect) 
 {
 	var SE = HasStatusEffectByID(newSE.GetID());
 	if (SE != null) // Already has the SE.
 	{
-		Debugger.instance.Log(gameObject, "Double SE");
-		if (SE.stackable)
-		{			
-			SE.Stack();
-			onSEStack(newSE.GetID());
+		Debugger.instance.Log(gameObject, "Duplicated SE");
+		if (SE.independent)		
+			AddStatusEffect(newSE);			
+		else
+		{
+			if (SE.stackable)
+			{			
+				SE.Stack();
+				onSEStack(newSE.GetID());				
+			}
+			if (SE.refreshable)			
+				SE.Refresh();				
+			Destroy(newSE.gameObject);			
 		}
-		if (SE.refreshable)
-			SE.Refresh();
-		Destroy(newSE.gameObject);
 	}
 	else // Doesn't have the new SE.
 		AddStatusEffect(newSE);

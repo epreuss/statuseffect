@@ -37,25 +37,38 @@ class EffectNumber extends Effect
 		baseValue = value;
 	}
 	
-	function Reset()
+	function FullReset()
 	{
 		stacks = 1;
 		value = baseValue;		
 	}
+	
+	function ResetStacks()
+	{
+		stacks = 1;
+	}
+	
+	/*
+	About stacking and increasing value:
+	
+	These two concepts are different.
+	Stacking is only used by temporary effects.
+	Why? Because permanent effects are 'already applied'.
+	If we stack them, they would be applied multiple times.
+	
+	Increase value is mainly used by TICK temporary.
+	Why? Because they would apply always the same value
+	for each tick. We need to increase the value!
+	*/
 		
 	/*
-	If we don't stack TICK Effects Number, they would
-	always apply the same value to the target Unit.
-	That is why we stack the value.
-
-	Eg.: Slow over time by MULTIPLY. 
+	Effect example: Slow over time by MULTIPLY. 
 	Starts at 0.8, goes to 0.64 in the next tick, then 0.51...
 	Resulting MOVESPEED with base value of 3: 2.4, 1.92, 1.53.
-
-	Note: Only TICK non-permanent Effects Number should
-	be stacked. This condition is checked in the Status Effect.
-	That's because permanent TICKs don't need to stack
-	to apply their effect.
+	
+	If we don't increase value, we would multiply 3 by 0.8
+	for every tick and the result would be 2.4 for the
+	entire effect duration.
 	*/
 	function IncreaseValue()
 	{
@@ -64,7 +77,10 @@ class EffectNumber extends Effect
 		if (type == MULTIPLY)	
 			value *= baseValue;
 	}
-	
+
+	/*
+	This is only used by stackable Status Effects.	
+	*/
 	function StackForTemporary()
 	{
 		if (!permanent)

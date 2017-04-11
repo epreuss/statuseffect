@@ -3,18 +3,7 @@
 @CustomEditor (EffectNumber)
 class EffectNumberEditor extends Editor 
 {
-	var script: EffectNumber;
-
-	var type: EffectNumberType;
-	var targetAttr: AttrNumberType;
-	var value: Number;
-	var permanent: boolean;
-	
-	@Header("Advanced")
-	var useAdvanced: boolean;
-	var baseValueOf: AttrNumberType;
-	var otherAttrBase: Number;
-	
+	var script: EffectNumber;	
 	
     function OnInspectorGUI()
     {   
@@ -44,6 +33,8 @@ class EffectNumberEditor extends Editor
 			script.targetAttr = EditorGUILayout.EnumPopup("Target Attr", script.targetAttr);
 			script.value = EditorGUILayout.FloatField("Value", script.value);
 			script.permanent = EditorGUILayout.Toggle("Permanent", script.permanent);			
+			if (script.mode == ApplyMode.LEAVE)			
+				script.permanent = true;			
 			script.useAdvanced = EditorGUILayout.Toggle("Use Advanced", script.useAdvanced);
 		}			
     }   
