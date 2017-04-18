@@ -2,9 +2,10 @@
 
 /*
 - This class defines HOW a number variable will be modified. 
-By SUM or MULTIPLY.
+Eg.: By SUM or MULTIPLY.
 - This class has no operations on its variables.
 - Other classes use this class variables.
+Eg.: AttrNumber.
 
 Important!
 - LEAVE effects MUST be permanent.
@@ -23,9 +24,15 @@ class EffectNumber extends Effect
 	var value: Number;
 	var permanent: boolean;
 	
-	@Header("Advanced")
-	var useAdvanced: boolean;
+	@Header("Advanced") 
+	
+	// Other attr.
+	var useOtherAttr: boolean;	
 	var baseValueOf: AttrNumberType;
+	
+	// Graduate.
+	var useGraduate: boolean;
+	var graduateTo: Number;	
 	
 	private var baseValue: Number;	
 	@HideInInspector var stacks: int;
@@ -76,6 +83,15 @@ class EffectNumber extends Effect
 			value += baseValue;
 		if (type == MULTIPLY)	
 			value *= baseValue;
+	}
+	
+	function Graduate(ticksDone: int, totalTicks: int)
+	{
+		var difference = graduateTo - baseValue;
+		//var progress = ticksDone / totalTicks;
+		var step = difference / (totalTicks-1);
+				
+		value += step;		
 	}
 
 	/*

@@ -39,7 +39,7 @@ class AttrNumber
 		reseted = false;
 		if (effect.type == SUM)
 		{
-			if (effect.useAdvanced)
+			if (effect.useOtherAttr)
 				baseValue += effect.value * effect.otherAttrBase;
 			else
 				baseValue += effect.value;
@@ -56,6 +56,8 @@ class AttrNumber
 	function Recalculate(effects: List.<EffectNumber>)
 	{			
 		reseted = false;
+		
+		// Gather sum and multiply effects.
 		var sumEffects = new List.<EffectNumber>();
 		var multiplyEffects = new List.<EffectNumber>();
 		for (var i = 0; i < effects.Count; i++)
@@ -65,10 +67,11 @@ class AttrNumber
 			else
 				multiplyEffects.Add(effects[i]);
 		}
-		
+				
 		currentValue = baseValue;			
 		var stackedMultiplier: float;
 		
+		// Apply multiply effects first.
 		for (effect in multiplyEffects)			
 		{
 			stackedMultiplier = 1.0;
@@ -79,11 +82,13 @@ class AttrNumber
 			if (effect.permanent)				
 				baseValue *= stackedMultiplier;										
 		}	
+		// Then, sum effects.
 		for (effect in sumEffects)	
 		{
-			if (effect.useAdvanced)			
+			if (effect.useOtherAttr)			
 			{								
 				stackedMultiplier = 1.0;
+				Debug.Log("oi " + effect.value);
 				for (i = 0; i < effect.stacks; i++)
 					stackedMultiplier *= effect.value;
 				

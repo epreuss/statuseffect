@@ -39,7 +39,7 @@ class StatusEffect extends Effect
 	
 	// Tick.
 	var useTicks: boolean;
-	@Range(3, 10) var totalTicks: int;
+	@Range(3, 20) var totalTicks: int;
 	@Range(0.1, 5) var delayInSecs: float;
 	private var timerTick: float;
 	private var ticksDone: int;
@@ -225,7 +225,11 @@ class StatusEffect extends Effect
 	{
 		for (e in permanentENs)
 			if (e.mode == mode)			
+			{
 				manager.GetUnitAttributes().ModifyNumberPermanently(e);							
+				if (e.mode == TICK && e.useGraduate)
+					e.Graduate(ticksDone, totalTicks);
+			}
 		manager.ReapplyTemporaryEffects();
 		
 		/*
@@ -235,7 +239,7 @@ class StatusEffect extends Effect
 		Eg.: MOVESPEED is 3. There is a debuff effect 
 		multiplying it for 0.5, resulting in 1.5.
 		Let's say we now apply a permanent debuff of flat 1.
-		The result MOVESPEED would be 0.5! That's wrong.
+		The result MOVESPEED would be 0.5. That's wrong!		
 
 		We should do: (3-1 = 2) -> done by 'UnitAttr.ModifyNumberPermanently'.
 			This method will change the base value of the attribute.
@@ -258,7 +262,15 @@ class StatusEffect extends Effect
 		var ENs = GetEffectsNumber();
 		for (e in ENs)
 			if (e.mode == TICK && !e.permanent)			 				
-				e.IncreaseValue();							
+			{
+				if (e.useGraduate)
+				{
+					e.Graduate(ticksDone, totalTicks);
+					
+				}
+				else
+					e.IncreaseValue();							
+			}
 	}
 		
 	/* 

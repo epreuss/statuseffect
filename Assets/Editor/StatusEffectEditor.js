@@ -116,7 +116,7 @@ class StatusEffectEditor extends Editor
 			script.useTicks = EditorGUILayout.Toggle("Use Tick", script.useTicks);
 			if (script.useTicks)	
 			{				
-				script.totalTicks = EditorGUILayout.Slider("Total Ticks", script.totalTicks, 3, 10);     	
+				script.totalTicks = EditorGUILayout.Slider("Total Ticks", script.totalTicks, 3, 20);     	
 				script.startWithTick = EditorGUILayout.Toggle("Start with Tick", script.startWithTick);
 				if (!script.startWithTick)
 				{

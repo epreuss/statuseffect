@@ -120,7 +120,7 @@ function ModifyNumberPermanently(effect: EffectNumber)
 
 private function UpdateIfAdvancedAttrNumber(effect: EffectNumber)
 {
-	if (effect.useAdvanced)				
+	if (effect.useOtherAttr)				
 		effect.otherAttrBase = GetAttrNumber(effect.baseValueOf).baseValue;		
 }
 
