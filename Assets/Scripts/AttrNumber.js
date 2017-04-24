@@ -6,7 +6,7 @@ calculating its current value based on Effects Number.
 */
 
 import AttrNumberType;
-enum AttrNumberType { HEALTH, MOVESPEED };
+enum AttrNumberType { HEALTH, MOVESPEED, DAMAGE };
 
 class AttrNumber
 {

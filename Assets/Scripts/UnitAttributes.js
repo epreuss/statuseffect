@@ -25,14 +25,17 @@ var numbers: List.<AttrNumber>;
 var booleans: List.<AttrBoolean>;
 
 @Header("Primitives")
-var health: Number;
-var moveSpeed: Number;
+var access: List.<Number>;
 var stun: boolean;
 
 private var unit: Unit;
 
 function Start()
 {
+	access = new List.<Number>();
+	for (var i = 0; i < System.Enum.GetValues(typeof(AttrNumberType)).Length; i++)
+		access.Add(0);
+	
 	unit = GetComponent(Unit);
 	for (n in numbers)
 	{
@@ -116,6 +119,7 @@ function ModifyNumberPermanently(effect: EffectNumber)
 	UpdateIfAdvancedAttrNumber(effect);
 	
 	attr.ModifyPermanently(effect);
+	//GetComponent(Unit).OnAttrNumberChange(effect.GetComponent(StatusEffect), effect.targetAttr, effect.value);
 }
 
 private function UpdateIfAdvancedAttrNumber(effect: EffectNumber)
@@ -126,16 +130,7 @@ private function UpdateIfAdvancedAttrNumber(effect: EffectNumber)
 
 private function UpdatePrimitiveNumber(attr: AttrNumber)
 {
-	switch (attr.type)
-	{
-		case HEALTH:
-			health = attr.GetCurrentValue();
-			break;
-		case MOVESPEED:
-			moveSpeed = attr.GetCurrentValue();
-			break;
-	}
-	SendMessage("onAttrNumberUpdate", attr.type);
+	access[attr.type] = attr.GetCurrentValue();	
 }
 
 private function UpdatePrimitiveBoolean(attr: AttrBoolean)
@@ -146,10 +141,5 @@ private function UpdatePrimitiveBoolean(attr: AttrBoolean)
 			stun = attr.GetCurrentValue();		
 			unit.OnStun(stun);		
 			break;		
-	}
-	SendMessage("onAttrBooleanUpdate", attr.type);
+	}	
 }
-
-function onAttrNumberUpdate(type: AttrNumberType) {}
-
-function onAttrBooleanUpdate(type: AttrBooleanType) {}

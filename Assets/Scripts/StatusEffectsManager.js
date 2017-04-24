@@ -43,14 +43,14 @@ function Update()
 		lock = true;
 		for (SE in statusEffects)					
 			SE.OnFrame();					
-		lock = false;
+		lock = false;		
 	}
 	if (Input.GetKeyDown(KeyCode.P))	
 		PurgeStatusEffect(StatusEffectDatabase.instance.GetSEID("Testings 2"));
 	if (Input.GetKeyDown(KeyCode.L))	
 		PopStatusEffect(StatusEffectDatabase.instance.GetSEID("Testings 2"));
 	if (Input.GetKeyDown(KeyCode.R))	
-		ReapplyTemporaryEffects();
+		ReapplyTemporaryEffects(null);
 }
 
 function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Function, onSEStack: Function, onSEPop: Function)
@@ -62,8 +62,7 @@ function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Func
 }
 
 /*
-Called by other units to send SEs 
-to the unit associated to this manager.
+Called by Unit and should be the only class.
 */
 function ReceiveStatusEffect(newSE: StatusEffect) 
 {
@@ -120,13 +119,14 @@ function PopStatusEffect(SEID: int)
 }
 
 /*
-Called by Status Effects of the manager's list,
-when their life time end.
+Called by Status Effects of the manager's list, when they expire.
 */
 function RemoveStatusEffect(deadSE: StatusEffect): IEnumerator
 {
+	Debugger.instance.Log(gameObject, "Try remove " + deadSE + ", lock: " + lock);
 	if (lock)
 	{
+		Debugger.instance.Log(gameObject, "Cant remove, locked");
 		yield;
 		RemoveStatusEffect(deadSE);
 	}
@@ -142,8 +142,8 @@ function RemoveStatusEffect(deadSE: StatusEffect): IEnumerator
 				statusEffects.RemoveAt(i);					
 				break;
 			}		
-		lock = false;
-		ReapplyTemporaryEffects();
+		lock = false;		
+		ReapplyTemporaryEffects(null);
 	}
 }
 
@@ -152,10 +152,15 @@ function GetUnitAttributes(): UnitAttributes
 	return unitAttr;
 }
 
+/*
+Called when a new SE is received in this manager.
+*/
 private function AddStatusEffect(newSE: StatusEffect): IEnumerator
 {
+	Debugger.instance.Log(gameObject, "Try add " + newSE + ", lock: " + lock);
 	if (lock)
 	{
+		Debugger.instance.Log(gameObject, "Cant add, locked");
 		yield;
 		AddStatusEffect(newSE);
 	}
@@ -166,7 +171,7 @@ private function AddStatusEffect(newSE: StatusEffect): IEnumerator
 		statusEffects.Add(newSE);
 		onListAdd(newSE);
 		lock = false;
-
+		
 		// This order is important!
 		// Debugger.instance.Log(gameObject, "Reapply - Entry SE");			
 		// ReapplyTemporaryEffects();
@@ -192,22 +197,22 @@ If the manager were to process permanent effects, it
 would reapply the permanent effect multiple times. That is wrong. 
 That's why this method only works with temporary effects.
 */
-function ReapplyTemporaryEffects()
+function ReapplyTemporaryEffects(requester: StatusEffect)
 {	
-	Debugger.instance.Log(gameObject, "Reapply");
-	ReapplyTemporaryEffectsNumber();
-	ReapplyTemporaryEffectsBoolean();
+	//Debugger.instance.Log(gameObject, "Reapply");
+	ReapplyTemporaryEffectsNumber(requester);
+	ReapplyTemporaryEffectsBoolean(requester);
 }
+
+// Used to read in inspector. Could be local.
+var allEN: List.<EffectNumber>;
 
 /*
 Important: 
 - This method DOES NOT reapply permanent effects!
 - It DOES NOT reapply LEAVE effects!
 */
-
-var allEN: List.<EffectNumber>;
-
-private function ReapplyTemporaryEffectsNumber()
+private function ReapplyTemporaryEffectsNumber(requester: StatusEffect)
 {	
 	allEN = new List.<EffectNumber>();
 	for (SE in statusEffects)
@@ -219,15 +224,25 @@ private function ReapplyTemporaryEffectsNumber()
 	var effectsForEachAttr = new List.<EffectNumber>();
 	for (var type = 0; type < System.Enum.GetValues(typeof(AttrNumberType)).Length; type++)
 	{
+		var currentAttrValue = unitAttr.access[type];
+	
 		for (EN in allEN)		
 			if (EN.targetAttr == type)						
 				effectsForEachAttr.Add(EN);							
 		unitAttr.RecalculateAttrNumber(type, effectsForEachAttr);
 		effectsForEachAttr.Clear();
+		
+		var resultAttrValue = unitAttr.access[type];
+		var attrChange = resultAttrValue - currentAttrValue;
+		if (requester != null && attrChange != 0)
+		{
+			var data = new AttrNumberChangeData(requester, type, attrChange);
+			GetComponent(Unit).OnAttrNumberChange(data);
+		}
 	}
 }
 
-private function ReapplyTemporaryEffectsBoolean()
+private function ReapplyTemporaryEffectsBoolean(requester: StatusEffect)
 {
 	var allEB = new List.<EffectBoolean>();
 	for (SE in statusEffects)

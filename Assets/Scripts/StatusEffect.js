@@ -17,34 +17,34 @@ class StatusEffect extends Effect
 {
 	var myEffects = new List.<Effect>();
 
-	var durationType: StatusEffectDurationType;
 	var icon: Sprite;
 	var color: Color;
+	var durationType: StatusEffectDurationType;
 	
-	// States.
+	// Special States.
 	/*
 	'isChild' must be checked as true if this SE 
 	is inside of the Effects list of another SE.
 	*/
 	var isChild: boolean; 
 	var showHUD: boolean;
-	var canDestroy: boolean;
-	var startWithTick: boolean;
-	var independent: boolean;
+	var canDestroy: boolean;	
 	
 	// Duration.
 	var duration: float;
 	var timerDuration: float;
-	private var expired: boolean;
+	var expired: boolean;
 	
 	// Tick.
 	var useTicks: boolean;
+	var startWithTick: boolean;
 	@Range(3, 20) var totalTicks: int;
 	@Range(0.1, 5) var delayInSecs: float;
 	private var timerTick: float;
 	private var ticksDone: int;
 	
-	// Stacking options.
+	// Duplication.
+	var independent: boolean;	
 	var refreshable: boolean;
 	var stackable: boolean;	
 	var stackIncrease: int;
@@ -57,7 +57,11 @@ class StatusEffect extends Effect
 	var hasSEChildren: boolean;
 
 	// Associated manager.
-	private var manager: StatusEffectsManager;	
+	var manager: StatusEffectsManager;	
+	
+	// Linkers.
+	var sender: GameObject;
+	var receiver: GameObject;	
 	
 	function Awake()
 	{
@@ -68,9 +72,9 @@ class StatusEffect extends Effect
 		if (!startWithTick)
 			totalTicks -= 1;
 					
-		InitializeListsAndBooleans();		
+		InitializeListsAndBooleans();				
 	}
-
+		
 	private function InitializeListsAndBooleans()
 	{
 		permanentENs = GetPermanentEffectsNumber();		
@@ -86,6 +90,12 @@ class StatusEffect extends Effect
 		else
 			delayInSecs = duration;
 	}
+	
+	function SetLinkers(sender: GameObject, receiver: GameObject)
+	{
+		this.sender = sender;
+		this.receiver = receiver;
+	}
 
 	function OnEntry() 
 	{		
@@ -96,22 +106,27 @@ class StatusEffect extends Effect
 		if (startWithTick && useTicks)
 			Tick();		
 		else
-			manager.ReapplyTemporaryEffects();	
+			manager.ReapplyTemporaryEffects(this);	
 			
 		if (IsInstant())
-			Expire();				
+			OnLeave();				
 	}
 
+	// When this is called, this SE will be removed from the manager.
+	// It may be removed in the same frame or in the next frame (most commom case).
 	function OnLeave() 
 	{
+		// Being the first line is important.
+		expired = true;
+		
 		if (hasPermanentENs)
 			ApplyPermanentEffectsNumber(LEAVE);	
 		if (hasSEChildren)
 			SendStatusEffectsToManager(LEAVE);
 		if (useTicks)
 			Tick();				
-		
-		RemoveFromManager();
+			
+		RemoveFromManager();		
 	}
 	
 	// For OVERTIME and PERMANENT SE.
@@ -122,7 +137,7 @@ class StatusEffect extends Effect
 		{
 			timerDuration += Time.deltaTime;
 			if (timerDuration > duration)			
-				Expire();							
+				OnLeave();							
 		}
 		// For OVERTIME and PERMANENT SE. Editor prevents INSTANT having ticks.		
 		if (useTicks)
@@ -154,7 +169,7 @@ class StatusEffect extends Effect
 		if (ticksDone > 1)
 			IncreaseTemporaryTickEffectsNumber();	
 		if (ticksDone < totalTicks || IsPermanent())		
-			manager.ReapplyTemporaryEffects();														
+			manager.ReapplyTemporaryEffects(this);														
 	}
 
 	// For OVERTIME and PERMANENT SE. Editor prevents INSTANT being stackable.
@@ -171,7 +186,7 @@ class StatusEffect extends Effect
 			ReStackEffectsNumber();
 			if (hasPermanentENs)
 				ApplyPermanentEffectsNumber(ENTRY);							
-			manager.ReapplyTemporaryEffects();							
+			manager.ReapplyTemporaryEffects(this);							
 		}
 	}
 	
@@ -184,7 +199,7 @@ class StatusEffect extends Effect
 		else
 		{
 			ReStackEffectsNumber();
-			manager.ReapplyTemporaryEffects();							
+			manager.ReapplyTemporaryEffects(this);							
 		}
 	}
 
@@ -196,13 +211,7 @@ class StatusEffect extends Effect
 		timerTick = 0;
 		OnEntry();		
 	}
-	
-	function Expire()
-	{
-		expired = true;
-		OnLeave();
-	}
-
+		
 	function Purge() 
 	{
 		RemoveFromManager();
@@ -230,7 +239,7 @@ class StatusEffect extends Effect
 				if (e.mode == TICK && e.useGraduate)
 					e.Graduate(ticksDone, totalTicks);
 			}
-		manager.ReapplyTemporaryEffects();
+		manager.ReapplyTemporaryEffects(this);
 		
 		/*
 		Explanation of why we need to reapply effects inside a 

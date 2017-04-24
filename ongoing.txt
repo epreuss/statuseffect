@@ -1,5 +1,3 @@
--> work a lot to make stacks work
-
--> same to refresh
-
--> test many different SE toguether!
++ Transpose Event SE Receive to SE Editor.
++ Arquitect the Event System for SE.
++ Use Unit SE Receive callback for an SE.

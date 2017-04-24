@@ -4,9 +4,10 @@
 class StatusEffectEditor extends Editor 
 {
 	var script: StatusEffect;
-
+	var foldouts = new boolean[2];
+		
     function OnInspectorGUI()
-    {   
+    {   		
         script = target;
 		
         if (ShowIsChild())
@@ -31,6 +32,9 @@ class StatusEffectEditor extends Editor
 			ShowDuplicationOptions();
 			EditorGUILayout.Space();
 		}		               
+		
+		ShowEventOptions();
+		EditorGUILayout.Space();
 		
 		ShowHUD();      
         EditorGUILayout.Space();  
@@ -73,14 +77,20 @@ class StatusEffectEditor extends Editor
     private function ShowEffectsList()
     {
         ShowBoldLabel("Effects");
-        var list = script.myEffects;
-    	var newCount = Mathf.Max(0, EditorGUILayout.IntField("Size", list.Count));
-		while (newCount < list.Count)
-		    list.RemoveAt(list.Count - 1);
-		while (newCount > list.Count)
-		    list.Add(null);
-    	for (var i = 0; i < list.Count; i++)
-		    list[i] = EditorGUILayout.ObjectField("Element " + i, list[i], typeof(Effect)) as Effect;
+		foldouts[0] = EditorGUILayout.Foldout(foldouts[0], "List");
+		if (foldouts[0])
+		{
+			EditorGUI.indentLevel++;
+			var list = script.myEffects;
+			var newCount = Mathf.Max(0, EditorGUILayout.IntField("Size", list.Count));
+			while (newCount < list.Count)
+				list.RemoveAt(list.Count - 1);
+			while (newCount > list.Count)
+				list.Add(null);
+			for (var i = 0; i < list.Count; i++)
+				list[i] = EditorGUILayout.ObjectField("Element " + i, list[i], typeof(Effect)) as Effect;
+			EditorGUI.indentLevel--;
+		}
     }
 
     private function ShowDuration()
@@ -138,6 +148,38 @@ class StatusEffectEditor extends Editor
     {
 		EditorGUILayout.LabelField(message, EditorStyles.boldLabel);  
     }
+	
+	private function ShowEventOptions()
+	{
+		/*
+		ShowBoldLabel("Event Options");
+		script.seReceive = EditorGUILayout.Toggle("SE Receive", script.seReceive);		
+		if (script.seReceive)
+		{
+			foldouts[1] = EditorGUILayout.Foldout(foldouts[1], "SE Receive Event");
+			if (foldouts[1])
+			{
+				EditorGUI.indentLevel++;
+				ShowList();
+				EditorGUI.indentLevel--;
+			}
+		}
+		*/
+	}
+	
+	/*
+	private function ShowList()
+    {
+        var list = script.seReceiveEvent.onAttrNumber;
+    	var newCount = Mathf.Max(0, EditorGUILayout.IntField("Size", list.Count));
+		while (newCount < list.Count)
+		    list.RemoveAt(list.Count - 1);
+		while (newCount > list.Count)
+		    list.Add(0);
+    	for (var i = 0; i < list.Count; i++)
+		    list[i] = EditorGUILayout.EnumPopup("Element " + i, list[i]);
+    }
+	*/
 	
 	private function ShowDuplicationOptions()
 	{
