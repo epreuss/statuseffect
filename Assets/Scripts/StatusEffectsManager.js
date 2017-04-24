@@ -237,7 +237,7 @@ private function ReapplyTemporaryEffectsNumber(requester: StatusEffect)
 		if (requester != null && attrChange != 0)
 		{
 			var data = new AttrNumberChangeData(requester, type, attrChange);
-			GetComponent(Unit).OnAttrNumberChange(data);
+			unitAttr.OnAttrNumberChange(data);
 		}
 	}
 }

@@ -1,3 +1,5 @@
-+ Transpose Event SE Receive to SE Editor.
-+ Arquitect the Event System for SE.
-+ Use Unit SE Receive callback for an SE.
++ Keep an eye on frame updates.
+When sending/receiving SE, it could create problems
+like low FPS spike. Only one frame doing many things...
+
++ Add event for Attr Boolean change.

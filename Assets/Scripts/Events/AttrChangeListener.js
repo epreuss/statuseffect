@@ -8,10 +8,11 @@ class EventAttrNumberChange
 
 enum EventSETarget { SENDER, RECEIVER };
 
-var eventsAttrNumbers: List.<EventAttrNumberChange>;
-var SEToSend: String;
+var attrType: AttrNumberType;
+var changeType: AttrNumberChangeType;
 var target: EventSETarget;
-var unit: Unit;
+var SEToSend: String;
+var unit: UnitAttributes;
 
 function Start()
 {	
@@ -23,16 +24,13 @@ function OnUnitAttrChange(data: AttrNumberChangeData)
 	var attrTypeIsEqual: boolean;
 	var changeTypeIsEqual: boolean;
 	
-	for (event in eventsAttrNumbers)
+	attrTypeIsEqual = attrType == data.attrType;
+	changeTypeIsEqual = changeType == data.getChangeType();
+	if (attrTypeIsEqual && changeTypeIsEqual)
 	{
-		attrTypeIsEqual = event.attrType == data.attrType;
-		changeTypeIsEqual = event.changeType == data.getChangeType();
-		if (attrTypeIsEqual && changeTypeIsEqual)
-		{
-			// Found a valid event.
-			SendSEToTarget(data);			
-		}
-	}
+		// Found a valid event.
+		SendSEToTarget(data);			
+	}	
 }
 
 /*
