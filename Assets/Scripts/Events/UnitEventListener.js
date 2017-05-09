@@ -1,13 +1,8 @@
 ﻿#pragma strict
 
-class EventAttrNumberChange
-{
-	var attrType: AttrNumberType;
-	var changeType: AttrNumberChangeType;
-}
-
 enum EventSETarget { SENDER, RECEIVER };
 
+var activator: AttrChangeActivator;
 var attrType: AttrNumberType;
 var changeType: AttrNumberChangeType;
 var target: EventSETarget;
@@ -16,17 +11,16 @@ var unit: UnitAttributes;
 
 function Start()
 {	
-	unit.RegisterListener(OnUnitAttrChange);
+	Debug.Log(unit + " has event " + UnitEventType.ATTRCHANGE);
+	unit.RegisterListener(OnUnitAttrChange, UnitEventType.ATTRCHANGE);
 }
 
 function OnUnitAttrChange(data: AttrNumberChangeData)
 {
-	var attrTypeIsEqual: boolean;
-	var changeTypeIsEqual: boolean;
-	
-	attrTypeIsEqual = attrType == data.attrType;
-	changeTypeIsEqual = changeType == data.getChangeType();
-	if (attrTypeIsEqual && changeTypeIsEqual)
+	var attrTypeIsEqual = attrType == data.attrType;
+	var changeTypeIsEqual = changeType == data.getChangeType();
+	var activatorIsEqual = activator == data.activator;	
+	if (attrTypeIsEqual && changeTypeIsEqual && activatorIsEqual)
 	{
 		// Found a valid event.
 		SendSEToTarget(data);			

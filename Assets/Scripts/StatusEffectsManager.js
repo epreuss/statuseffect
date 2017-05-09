@@ -123,10 +123,10 @@ Called by Status Effects of the manager's list, when they expire.
 */
 function RemoveStatusEffect(deadSE: StatusEffect): IEnumerator
 {
-	Debugger.instance.Log(gameObject, "Try remove " + deadSE + ", lock: " + lock);
+	//Debugger.instance.Log(gameObject, "Try remove " + deadSE + ", lock: " + lock);
 	if (lock)
 	{
-		Debugger.instance.Log(gameObject, "Cant remove, locked");
+		//Debugger.instance.Log(gameObject, "Cant remove, locked");
 		yield;
 		RemoveStatusEffect(deadSE);
 	}
@@ -157,10 +157,10 @@ Called when a new SE is received in this manager.
 */
 private function AddStatusEffect(newSE: StatusEffect): IEnumerator
 {
-	Debugger.instance.Log(gameObject, "Try add " + newSE + ", lock: " + lock);
+	//Debugger.instance.Log(gameObject, "Try add " + newSE + ", lock: " + lock);
 	if (lock)
 	{
-		Debugger.instance.Log(gameObject, "Cant add, locked");
+		//Debugger.instance.Log(gameObject, "Cant add, locked");
 		yield;
 		AddStatusEffect(newSE);
 	}

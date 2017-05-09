@@ -23,22 +23,25 @@ To modify them, we use SEs.
 */
 var numbers: List.<AttrNumber>;
 var booleans: List.<AttrBoolean>;
-private var attrChangeListeners: List.<Function>;
 
 @Header("Primitives")
 var access: List.<Number>;
 var stun: boolean;
 
-private var unit: Unit;
+// Events.
+private var eventListeners: List.<Function>[];
 
 function Awake()
-{
-	attrChangeListeners = new List.<Function>();
+{	
+	var length = System.Enum.GetValues(typeof(UnitEventType)).Length;
+	eventListeners = new List.<Function>[length];
+	for (var i = 0; i < length; i++)
+		eventListeners[i] = new List.<Function>();
+	
 	access = new List.<Number>();
-	for (var i = 0; i < System.Enum.GetValues(typeof(AttrNumberType)).Length; i++)
+	for (i = 0; i < System.Enum.GetValues(typeof(AttrNumberType)).Length; i++)
 		access.Add(0);
 	
-	unit = GetComponent(Unit);
 	for (n in numbers)
 	{
 		n.Reset();
@@ -141,13 +144,14 @@ private function UpdatePrimitiveBoolean(attr: AttrBoolean)
 	{
 		case STUN:	
 			stun = attr.GetCurrentValue();		
-			unit.OnStun(stun);		
 			break;		
 	}	
 }
 
-// Attr Change Events management.
+// Events management.
 
+enum UnitEventType { ATTRCHANGE, SKILLUSED };
+enum AttrChangeActivator { SELF, OTHER };
 enum AttrNumberChangeType { INCREASE, DECREASE };
 
 class AttrNumberChangeData
@@ -155,6 +159,7 @@ class AttrNumberChangeData
 	var changer: StatusEffect;
 	var attrType: AttrNumberType;
 	var attrChange: Number;
+	var activator: AttrChangeActivator;
 	
 	function AttrNumberChangeData(changer: StatusEffect, attrType: AttrNumberType, attrChange: Number)
 	{
@@ -177,24 +182,48 @@ class AttrNumberChangeData
 	}
 }
 
-function RegisterListener(callback: Function)
+function RegisterListener(callback: Function, type: UnitEventType)
 {
-	attrChangeListeners.Add(callback);
+	eventListeners[type].Add(callback);
 }
 
-function RemoveListener(callback: Function)
+function RemoveListener(callback: Function, type: UnitEventType)
 {
-	for (listener in attrChangeListeners)
+	for (listener in eventListeners[type])
 		if (listener == callback)
 		{
-			attrChangeListeners.Remove(listener);
+			eventListeners[type].Remove(listener);
 			break;
 		}
 }
 
 function OnAttrNumberChange(data: AttrNumberChangeData) // Callback - Status Effects Manager.
 {
-	Debugger.instance.Log(data.changer.name + ": " + data.attrType.ToString() + ", " + data.attrChange);		
-	for (listener in attrChangeListeners)
+	//Debug.Log(gameObject.name + ", " + data.changer.sender + ": " + (gameObject != data.changer.sender));
+	if (gameObject != data.changer.sender)
+	{
+		var copy = new AttrNumberChangeData(data.changer, data.attrType, data.attrChange);
+		copy.activator = AttrChangeActivator.OTHER;
+		copy.changer.sender.SendMessage("OnAttrNumberChange", copy);
+	}
+	Debugger.instance.Log(gameObject.name + ", " + data.changer.name + ": " + data.attrType.ToString() + ", " + data.attrChange + ", " + data.activator);			
+	
+	for (listener in eventListeners[UnitEventType.ATTRCHANGE])
 		listener(data);
+}
+
+function OnSEReceive(pack: SEPack)
+{
+	var SE = StatusEffectDatabase.instance.GetSE(pack.se);
+	SE.SetLinkers(pack.sender, pack.receiver);	
+	GetComponent(StatusEffectsManager).ReceiveStatusEffect(SE);
+	//pack.sender.SendMessage("OnSESent", pack);
+}
+
+function OnSESent(pack: SEPack)
+{
+	/*
+	for (listener in eventListeners[UnitEventType.SESENT])
+		listener();
+	*/
 }

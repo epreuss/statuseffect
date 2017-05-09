@@ -95,6 +95,9 @@ class StatusEffect extends Effect
 	{
 		this.sender = sender;
 		this.receiver = receiver;
+		var children = GetStatusEffects();
+		for (se in children)
+			se.SetLinkers(sender, receiver);
 	}
 
 	function OnEntry() 
