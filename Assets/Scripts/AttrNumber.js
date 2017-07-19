@@ -7,6 +7,7 @@ calculating its current value based on Effects Number.
 
 import AttrNumberType;
 enum AttrNumberType { HEALTH, MOVESPEED, DAMAGE };
+enum AttrNumberChangeType { INCREASE, DECREASE, ZERO };
 
 class AttrNumber
 {
@@ -29,7 +30,7 @@ class AttrNumber
 		currentValue = baseValue;
 	}
 
-	function IsBaseValue()
+	function IsReseted()
 	{
 		return reseted;
 	}
@@ -82,13 +83,13 @@ class AttrNumber
 			if (effect.permanent)				
 				baseValue *= stackedMultiplier;										
 		}	
+		
 		// Then, sum effects.
 		for (effect in sumEffects)	
 		{
 			if (effect.useOtherAttr)			
 			{								
 				stackedMultiplier = 1.0;
-				Debug.Log("oi " + effect.value);
 				for (i = 0; i < effect.stacks; i++)
 					stackedMultiplier *= effect.value;
 				

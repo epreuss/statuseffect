@@ -21,6 +21,7 @@ resulting in 1+2+3+4 = 10.
 
 var statusEffects: List.<StatusEffect>;
 private var unitAttr: UnitAttributes;
+private var postManager: PostSEManager;
 
 private var lock: boolean;
 private var instanceID: int;
@@ -34,6 +35,7 @@ function Awake()
 {
 	statusEffects = new List.<StatusEffect>();
 	unitAttr = GetComponent(UnitAttributes);
+	postManager = GetComponent(PostSEManager);
 }
 
 function Update()
@@ -62,7 +64,7 @@ function RegisterListOperationsCallbacks(onListAdd: Function, onListRemove: Func
 }
 
 /*
-Called by Unit and should be the only class.
+Called by EventsManager and StatusEffect.
 */
 function ReceiveStatusEffect(newSE: StatusEffect) 
 {
@@ -228,7 +230,7 @@ private function ReapplyTemporaryEffectsNumber(requester: StatusEffect)
 	
 		for (EN in allEN)		
 			if (EN.targetAttr == type)						
-				effectsForEachAttr.Add(EN);							
+				effectsForEachAttr.Add(EN);									
 		unitAttr.RecalculateAttrNumber(type, effectsForEachAttr);
 		effectsForEachAttr.Clear();
 		
@@ -237,7 +239,7 @@ private function ReapplyTemporaryEffectsNumber(requester: StatusEffect)
 		if (requester != null && attrChange != 0)
 		{
 			var data = new AttrNumberChangeData(requester, type, attrChange);
-			unitAttr.OnAttrNumberChange(data);
+			postManager.OnAttrNumberChange(data);
 		}
 	}
 }

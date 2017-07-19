@@ -55,6 +55,21 @@ class EffectNumber extends Effect
 		stacks = 1;
 	}
 	
+	function IsAdvanced()
+	{
+		return useOtherAttr || useGraduate;
+	}	
+	
+	function GetChangeType(): AttrNumberChangeType
+	{
+		if (value > 0)
+			return AttrNumberChangeType.INCREASE;
+		else if (value < 0)
+			return AttrNumberChangeType.DECREASE;
+		else 
+			return AttrNumberChangeType.ZERO;		
+	}
+	
 	/*
 	About stacking and increasing value:
 	

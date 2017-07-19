@@ -3,3 +3,5 @@ When sending/receiving SE, it could create problems
 like low FPS spike. Only one frame doing many things...
 
 + Add event for Attr Boolean change.
+
++ Add Editor for PreEventSE.

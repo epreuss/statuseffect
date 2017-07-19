@@ -22,7 +22,7 @@ function Log(log: String)
 
 function Log(owner: GameObject, log: String) 
 {
-	var message = owner.name + ", " + Time.frameCount + ": " + log;
+	var message = Time.frameCount + ", " + owner.name + ": " + log;
 	logs += message + "\n";
 	if (showDebug)
 		Debug.Log(message);
